@@ -1,5 +1,4 @@
 # do NOT need admin rights
-# not reliable. tried once on ca-nor1-sb10, nothing, tried again, got results... :/
 
 #''; net view | ? {$_ -match '^\\\\'} | % {$_.trim()} | % {if (ping1 $_.substring(2)) {net view $_}} | ? {$_ -and $_ -notmatch 'no entries|not found'} | % {if ($_ -match 'succ') {"`n"} else {$_}}
 
