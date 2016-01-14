@@ -4,7 +4,7 @@
 # Filters groups by regex on name, not by "if it found a group then exclude it"
 # Does not tell you if the permission is inherited or explicit
 # 
-# -Path            = 'c:\temp' | 'r:\' | '\\group.wan\departments\'
+# -Path            = 'c:\temp' | 'r:\' | '\\server\share'
 # -Depth           = folder recurse depth. max is 6
 # -ExpandGroups    = get all nested members of AD groups. then does not show group names
 # -ShowAllAccounts = include builtin accounts and AD groups. for use with ExpandGroups
@@ -85,7 +85,7 @@ function Get-FolderACL ([string]$Folder, [string]$Filter) {
               $_ -notmatch '-svc-' ########################
             } |
             ForEach-Object {
-              #* $IdentityReference = ([adsi]"LDAP://$obj").samaccountname # returns GROUP\anthony.stringer
+              #* $IdentityReference = ([adsi]"LDAP://$obj").samaccountname
               $IdentityReference = ([adsi]"LDAP://$_").samaccountname
               $CurrentACLPermission = $IdentityReference,$FileSystemRights,$InheritanceFlags,$PropagationFlags,$AccessControlType
               try {
