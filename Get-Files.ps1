@@ -12,7 +12,7 @@
 #
 # This will not show dirs unless recursive
 # also, maybe add something to show size in appropriate b/kb/mb/gb
-# Include limits the resutls to files only!
+# -Include limits the resutls to files only!
 # 
 # /L = List only – don’t copy, timestamp or delete any files.
 # /S = copy Subdirectories, but not empty ones.
