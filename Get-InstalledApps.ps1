@@ -1,8 +1,8 @@
 function Get-InstalledApps {
 	param (
-        [Parameter(ValueFromPipeline=$true)]
-		[string[]]$comps = $env:COMPUTERNAME
-	)
+		[Parameter(ValueFromPipeline=$true)]
+        [string[]]$comps = $env:COMPUTERNAME
+    )
     
     foreach ($comp in $comps) {
         $keys = '','\Wow6432Node'
