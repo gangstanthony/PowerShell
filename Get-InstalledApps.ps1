@@ -11,7 +11,7 @@ function Get-InstalledApps {
             foreach ($app in $apps) {
                 $name = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('DisplayName')
                 if ($name) {
-                    New-Object PSObject -Property @{
+                    [pscustomobject]@{
                         'DisplayName'     = $name
                         'DisplayVersion'  = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('DisplayVersion')
                         'Publisher'       = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('Publisher')
