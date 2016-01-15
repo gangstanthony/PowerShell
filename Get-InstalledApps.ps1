@@ -1,6 +1,6 @@
 function Get-InstalledApps {
-	param (
-		[Parameter(ValueFromPipeline=$true)]
+    param (
+        [Parameter(ValueFromPipeline=$true)]
         [string[]]$comps = $env:COMPUTERNAME
     )
     
