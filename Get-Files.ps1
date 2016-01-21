@@ -34,7 +34,7 @@ function Get-Files {
         [array]$Include,
         [switch]$Recurse
     )
-
+    
     $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
     if ($Recurse) {$params += '/E'}
     if ($Include) {$params += $Include}
@@ -42,13 +42,23 @@ function Get-Files {
         foreach ($line in $(robocopy $dir NULL $params)) {
             # folder
             if ($line -match '\s+\d+\s+(?<FullName>.*\\)$') {
-                [pscustomobject]@{
-                    FullName = $matches.FullName
-                    DirectoryName = Split-Path $matches.FullName
-                    Name = (Split-Path $matches.FullName -Leaf) + '\'
-                    Size = $null
-                    Extension = $null
-                    DateModified = $null
+                function createobject {
+                    [pscustomobject]@{
+                        FullName = $matches.FullName
+                        DirectoryName = Split-Path $matches.FullName
+                        Name = (Split-Path $matches.FullName -Leaf) + '\'
+                        Size = $null
+                        Extension = $null
+                        DateModified = $null
+                    }
+                }
+                
+                if ($Include) {
+                    if ($matches.Fullname -like "*$($include.replace('*',''))*") {
+                        createobject
+                    }
+                } else {
+                    createobject
                 }
             # file
             } elseif ($line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
