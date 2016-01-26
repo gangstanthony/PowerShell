@@ -1,5 +1,5 @@
 # this is my own learning of accessing the registry on remote computers.
-# for a more complete solution, i recommend http://archive.msdn.microsoft.com/PSRemoteRegistry
+# for a more complete solution, i recommend https://psremoteregistry.codeplex.com/
 
 function Set-RemoteRegistry {
     param (
