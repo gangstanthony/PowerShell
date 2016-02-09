@@ -1,22 +1,23 @@
 function Get-InstalledApps {
-    param (
+	param (
         [Parameter(ValueFromPipeline=$true)]
-        [string[]]$comps = $env:COMPUTERNAME
-    )
+		[string[]]$comps = $env:COMPUTERNAME
+	)
     
     foreach ($comp in $comps) {
         $keys = '','\Wow6432Node'
         foreach ($key in $keys) {
             $apps = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall").GetSubKeyNames()
             foreach ($app in $apps) {
-                $name = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('DisplayName')
+                $program = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app")
+                $name = $program.GetValue('DisplayName')
                 if ($name) {
-                    [pscustomobject]@{
+                    New-Object PSObject -Property @{
                         'DisplayName'     = $name
-                        'DisplayVersion'  = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('DisplayVersion')
-                        'Publisher'       = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('Publisher')
-                        'InstallDate'     = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('InstallDate')
-                        'UninstallString' = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app").GetValue('UninstallString')
+                        'DisplayVersion'  = $program.GetValue('DisplayVersion')
+                        'Publisher'       = $program.GetValue('Publisher')
+                        'InstallDate'     = $program.GetValue('InstallDate')
+                        'UninstallString' = $program.GetValue('UninstallString')
                     }
                 }
             }
