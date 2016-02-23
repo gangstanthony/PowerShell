@@ -3,9 +3,6 @@ function Save-CSVasExcel {
         [string]$CSVFile = $(Throw 'No file provided.')
     )
     
-    # will fail if dir does not exist
-    #$CSVFile = (gi (split-path $CSVFile)).fullname + (split-path $CSVFile -leaf)
-
     BEGIN {
         function Resolve-FullPath ([string]$Path) {    
             if ( -not ([System.IO.Path]::IsPathRooted($Path)) ) {
