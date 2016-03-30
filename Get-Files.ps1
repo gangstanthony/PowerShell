@@ -32,48 +32,66 @@ function Get-Files {
     param (
         [array]$Path = $PWD,
         [array]$Include,
+        [switch]$NameOnly,
         [switch]$Recurse
     )
-    
-    $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
-    if ($Recurse) {$params += '/E'}
-    if ($Include) {$params += $Include}
-    foreach ($dir in $Path) {
-        foreach ($line in $(robocopy $dir NULL $params)) {
-            # folder
-            if ($line -match '\s+\d+\s+(?<FullName>.*\\)$') {
-                function createobject {
-                    [pscustomobject]@{
-                        FullName = $matches.FullName
-                        DirectoryName = Split-Path $matches.FullName
-                        Name = (Split-Path $matches.FullName -Leaf) + '\'
-                        Size = $null
-                        Extension = $null
-                        DateModified = $null
-                    }
-                }
-                
-                if ($Include) {
-                    if ($matches.Fullname -like "*$($include.replace('*',''))*") {
-                        createobject
-                    }
-                } else {
-                    createobject
-                }
-            # file
-            } elseif ($line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
-                [pscustomobject]@{
-                    FullName = $matches.FullName
-                    DirectoryName = Split-Path $matches.FullName
-                    Name = Split-Path $matches.FullName -Leaf
-                    Size = [int64]$matches.Size
-                    Extension = '.' + ($matches.FullName.split('.')[-1])
-                    DateModified = $matches.Date
-                }
-            } else {
-                # Uncomment to see all lines that were not matched in the regex above.
-                #Write-host $line
-            }
-        }
-    }
+    
+    begin {
+        function CreateFolderObject {
+            New-Object psobject -Property @{
+                FullName = $matches.FullName
+                DirectoryName = Split-Path $matches.FullName
+                Name = (Split-Path $matches.FullName -Leaf) + '\'
+                Size = $null
+                Extension = $null
+                DateModified = $null
+            }
+        }
+    }
+
+    process {
+        $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
+        if ($Recurse) {$params += '/E'}
+        if ($Include) {$params += $Include}
+        foreach ($dir in $Path) {
+            foreach ($line in $(robocopy $dir NULL $params)) {
+                # folder
+                if ($line -match '\s+\d+\s+(?<FullName>.*\\)$') {
+                    if ($Include) {
+                        if ($matches.FullName -like "*$($include.replace('*',''))*") {
+                            if ($NameOnly) {
+                                $matches.FullName
+                            } else {
+                                CreateFolderObject
+                            }
+                        }
+                    } else {
+                        if ($NameOnly) {
+                            $matches.FullName
+                        } else {
+                            CreateFolderObject
+                        }
+                    }
+
+                # file
+                } elseif ($line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
+                    if ($NameOnly) {
+                        $matches.FullName
+                    } else {
+                        New-Object psobject -Property @{
+                            FullName = $matches.FullName
+                            DirectoryName = Split-Path $matches.FullName
+                            Name = Split-Path $matches.FullName -Leaf
+                            Size = [int64]$matches.Size
+                            Extension = '.' + ($matches.FullName.split('.')[-1])
+                            DateModified = $matches.Date
+                        }
+                    }
+                } else {
+                    # Uncomment to see all lines that were not matched in the regex above.
+                    #Write-host $line
+                }
+            }
+        }
+    }
 }
