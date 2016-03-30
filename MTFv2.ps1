@@ -93,7 +93,7 @@ $user = $Outlook.Session.CurrentUser.Name
 # get available drives in case dealing with long file names
 # we can map a drive to a long file path so it is short enough for powershell to handle
 $drives = [io.driveinfo]::getdrives() | % {$_.name[0]}
-$alpha = 65..90 | % { [char]$_ }
+$alpha = [char[]](65..90)
 $avail = diff $drives $alpha | select -ExpandProperty inputobject
 $drive = $avail[0] + ':'
 
