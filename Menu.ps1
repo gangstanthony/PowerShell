@@ -15,7 +15,7 @@ function Menu {
         if ($prompt) { Write-Host $prompt }
 
         for ($i = 0; $i -lt $object.count; $i++) {
-            Write-Host $i`. $object[$i]
+            Write-Host $i`. $($object[$i])
         }
 
         Write-Host ''
