@@ -1,10 +1,14 @@
 # https://www.reddit.com/r/PowerShell/comments/4ad8or/create_user_menus_from_objectsarrays/
 # https://www.reddit.com/r/PowerShell/comments/49tqgx/need_some_help_with_an_automation_script_im/
 
+# TODO:
+#  - allow select multiple items. ex: 0, 1 then split and trim
+
 function Menu {
     param (
         [object[]]$Object,
-        $Prompt
+        $Prompt,
+        [switch]$AllowCancel
     )
 
     if (!$object) { Throw 'Must provide an object.' }
@@ -12,7 +16,13 @@ function Menu {
     Write-Host ''
 
     do {
-        if ($prompt) { Write-Host $prompt }
+        if ($Prompt) {
+            Write-Host $Prompt
+        } elseif ($AllowCancel) {
+            Write-Host 'Choose an option, or enter "C" to cancel'
+        } else {
+            Write-Host 'Choose an option'
+        }
 
         for ($i = 0; $i -lt $object.count; $i++) {
             Write-Host $i`. $($object[$i])
@@ -22,7 +32,11 @@ function Menu {
 
         $answer = Read-Host
 
-        if ($answer -in 0..($object.count-1)) {
+        if ($AllowCancel -and $answer.ToLower() -eq 'c') {
+            return
+        }
+
+        if ($answer -in 0..($object.count - 1)) {
             $object[$answer]
             $ok = $true
         } else {
