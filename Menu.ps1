@@ -1,5 +1,6 @@
 # https://www.reddit.com/r/PowerShell/comments/4ad8or/create_user_menus_from_objectsarrays/
 # https://www.reddit.com/r/PowerShell/comments/49tqgx/need_some_help_with_an_automation_script_im/
+# http://www.powertheshell.com/input_psv3/
 
 # TODO:
 #  - allow select multiple items. ex: 0, 1 then split and trim
