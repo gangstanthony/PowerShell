@@ -13,47 +13,39 @@ function Menu {
         [switch]$AllowCancel
     )
 
-    begin {
-        $arraylist = New-Object System.Collections.ArrayList
-    }
+    $Object = @($input)
 
-    process {
-        [void]$arraylist.Add($Object)
-    }
+    if (!$Object) { Throw 'Must provide an object.' }
+    $ok = $false
+    Write-Host ''
 
-    end {
-        if (!$arraylist) { Throw 'Must provide an object.' }
-        $ok = $false
+    do {
+        if ($Prompt) {
+            Write-Host $Prompt
+        } elseif ($AllowCancel) {
+            Write-Host 'Choose an option, or enter "C" to cancel'
+        } else {
+            Write-Host 'Choose an option'
+        }
+
+        for ($i = 0; $i -lt $Object.count; $i++) {
+            Write-Host $i`. $($Object[$i])
+        }
+
         Write-Host ''
 
-        do {
-            if ($Prompt) {
-                Write-Host $Prompt
-            } elseif ($AllowCancel) {
-                Write-Host 'Choose an option, or enter "C" to cancel'
-            } else {
-                Write-Host 'Choose an option'
-            }
+        $answer = Read-Host
 
-            for ($i = 0; $i -lt $arraylist.count; $i++) {
-                Write-Host $i`. $($arraylist[$i])
-            }
+        if ($AllowCancel -and $answer.ToLower() -eq 'c') {
+            return
+        }
 
+        if ($answer -in 0..($Object.count - 1)) {
+            $Object[$answer]
+            $ok = $true
+        } else {
+            Write-Host 'Not an option!' -ForegroundColor Red
             Write-Host ''
-
-            $answer = Read-Host
-
-            if ($AllowCancel -and $answer.ToLower() -eq 'c') {
-                return
-            }
-
-            if ($answer -in 0..($arraylist.count - 1)) {
-                $arraylist[$answer]
-                $ok = $true
-            } else {
-                Write-Host 'Not an option!' -ForegroundColor Red
-                Write-Host ''
-            }
-        } while (!$ok)
-    }
+        }
+    } while (!$ok)
 }
