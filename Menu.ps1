@@ -6,42 +6,53 @@
 
 function Menu {
     param (
+        [parameter(ValueFromPipeline=$True,ValueFromPipelinebyPropertyName=$True)]
         [object[]]$Object,
         $Prompt,
         [switch]$AllowCancel
     )
 
-    if (!$object) { Throw 'Must provide an object.' }
-    $ok = $false
-    Write-Host ''
+    begin {
+        $arraylist = New-Object System.Collections.ArrayList
+    }
 
-    do {
-        if ($Prompt) {
-            Write-Host $Prompt
-        } elseif ($AllowCancel) {
-            Write-Host 'Choose an option, or enter "C" to cancel'
-        } else {
-            Write-Host 'Choose an option'
-        }
+    process {
+        [void]$arraylist.Add($Object)
+    }
 
-        for ($i = 0; $i -lt $object.count; $i++) {
-            Write-Host $i`. $($object[$i])
-        }
-
+    end {
+        if (!$arraylist) { Throw 'Must provide an object.' }
+        $ok = $false
         Write-Host ''
 
-        $answer = Read-Host
+        do {
+            if ($Prompt) {
+                Write-Host $Prompt
+            } elseif ($AllowCancel) {
+                Write-Host 'Choose an option, or enter "C" to cancel'
+            } else {
+                Write-Host 'Choose an option'
+            }
 
-        if ($AllowCancel -and $answer.ToLower() -eq 'c') {
-            return
-        }
+            for ($i = 0; $i -lt $arraylist.count; $i++) {
+                Write-Host $i`. $($arraylist[$i])
+            }
 
-        if ($answer -in 0..($object.count - 1)) {
-            $object[$answer]
-            $ok = $true
-        } else {
-            Write-Host 'Not an option!' -ForegroundColor Red
             Write-Host ''
-        }
-    } while (!$ok)
+
+            $answer = Read-Host
+
+            if ($AllowCancel -and $answer.ToLower() -eq 'c') {
+                return
+            }
+
+            if ($answer -in 0..($arraylist.count - 1)) {
+                $arraylist[$answer]
+                $ok = $true
+            } else {
+                Write-Host 'Not an option!' -ForegroundColor Red
+                Write-Host ''
+            }
+        } while (!$ok)
+    }
 }
