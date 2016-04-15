@@ -7,7 +7,10 @@
 
 function Menu {
     param (
-        [parameter(ValueFromPipeline=$True,ValueFromPipelinebyPropertyName=$True)]
+        [Parameter(
+            ValueFromPipeline=$True,
+            ValueFromPipelinebyPropertyName=$True
+        )]
         [object[]]$Object,
         $Prompt,
         [switch]$AllowCancel
