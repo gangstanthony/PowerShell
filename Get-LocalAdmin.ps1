@@ -1,3 +1,6 @@
+# adsi error fix
+# http://stackoverflow.com/questions/31949541/print-local-group-members-in-powershell-5-0
+
 function Get-LocalAdmin {
     Param (
         $comp = $env:COMPUTERNAME,
