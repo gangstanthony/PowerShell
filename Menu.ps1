@@ -33,7 +33,7 @@ function Menu {
         }
 
         for ($i = 0; $i -lt $Object.count; $i++) {
-            Write-Host $i`. $($Object[$i])
+            Write-Host "$($i+1). $($Object[$i])"
         }
 
         Write-Host ''
@@ -44,8 +44,8 @@ function Menu {
             return
         }
 
-        if ($answer -in 0..($Object.count - 1)) {
-            $Object[$answer]
+        if ($answer -in 1..$Object.count) {
+            $Object[$answer-1]
             $ok = $true
         } else {
             Write-Host 'Not an option!' -ForegroundColor Red
