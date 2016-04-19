@@ -12,7 +12,8 @@ function Menu {
             ValueFromPipelinebyPropertyName=$True)]
         [object[]]$Object,
         $Prompt,
-        [switch]$AllowCancel
+        [switch]$AllowCancel,
+        [switch]$AllowMultiple
     )
 
     if ($input) {
@@ -20,7 +21,6 @@ function Menu {
     }
 
     if (!$Object) { Throw 'Must provide an object.' }
-    $ok = $false
     Write-Host ''
 
     do {
@@ -32,24 +32,44 @@ function Menu {
             Write-Host 'Choose an option'
         }
 
-        for ($i = 0; $i -lt $Object.count; $i++) {
+        for ($i = 0; $i -lt $Object.Count; $i++) {
             Write-Host "$($i+1). $($Object[$i])"
         }
 
         Write-Host ''
 
-        $answer = Read-Host
+        if ($AllowMultiple) {
+            $answers = @(Read-Host).Split(',').Trim()
 
-        if ($AllowCancel -and $answer.ToLower() -eq 'c') {
-            return
-        }
+            if ($AllowCancel -and $answers -match 'c') {
+                return
+            }
 
-        if ($answer -in 1..$Object.count) {
-            $Object[$answer-1]
             $ok = $true
+            foreach ($ans in $answers) {
+                if ($ans -in 1..$Object.Count) {
+                    $Object[$ans-1]
+                } else {
+                    Write-Host 'Not an option!' -ForegroundColor Red
+                    Write-Host ''
+                    $ok = $false
+                }
+            }
         } else {
-            Write-Host 'Not an option!' -ForegroundColor Red
-            Write-Host ''
+            $answer = Read-Host
+
+            if ($AllowCancel -and $answer.ToLower() -eq 'c') {
+                return
+            }
+
+            $ok = $true
+            if ($answer -in 1..$Object.Count) {
+                $Object[$answer-1]
+            } else {
+                Write-Host 'Not an option!' -ForegroundColor Red
+                Write-Host ''
+                $ok = $false
+            }
         }
     } while (!$ok)
 }
