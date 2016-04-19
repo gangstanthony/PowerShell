@@ -6,17 +6,18 @@
 #  - allow select multiple items. ex: 0, 1 then split and trim
 
 function Menu {
-    param (
+    Param (
         [Parameter(
             ValueFromPipeline=$True,
-            ValueFromPipelinebyPropertyName=$True
-        )]
+            ValueFromPipelinebyPropertyName=$True)]
         [object[]]$Object,
         $Prompt,
         [switch]$AllowCancel
     )
 
-    $Object = @($input)
+    if ($input) {
+        $Object = @($input)
+    }
 
     if (!$Object) { Throw 'Must provide an object.' }
     $ok = $false
