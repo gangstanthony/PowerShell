@@ -67,37 +67,37 @@ function Get-RemoteRegistry {
                 $subkeys = $registry.OpenSubKey($key).GetSubKeyNames()
                 foreach ($subkey in $subkeys) {
                     try{ $subregistry = $registry.OpenSubKey("$key\$subkey") }catch{}
-                    $obj = New-Object psobject
-                    $obj | Add-Member NoteProperty 'RegKeyName' $subkey
-                    try{ $obj | Add-Member NoteProperty 'RegKeyParent' $key }catch{}
-                    try{ $obj | Add-Member NoteProperty 'RegKeyChildren' $subregistry.GetSubKeyNames() }catch{}
+                    $hash = @{}
+                    $hash.Add('RegKeyName', $subkey)
+                    try{ $hash.Add('RegKeyParent', $key) }catch{}
+                    try{ $hash.Add('RegKeyChildren', $subregistry.GetSubKeyNames()) }catch{}
                     try{ $names = $subregistry.GetValueNames() }catch{}
                     foreach ($name in ($names | ? {$_})) {
-                        $obj | Add-Member NoteProperty $name $(
-                            $value = New-Object psobject
-                            $value | Add-Member NoteProperty 'Type' $subregistry.GetValueKind($name)
-                            $value | Add-Member NoteProperty 'Value' $subregistry.GetValue($name)
-                            $value
-                        )
+                        $hash.Add($name, $(
+                            [pscustomobject]@{
+                                Type = $subregistry.GetValueKind($name)
+                                Value = $subregistry.GetValue($name)
+                            }
+                        ))
                     }
-                    $obj
+                    [pscustomobject]$hash
                 }
             } else {
                 try{ $subregistry = $registry.OpenSubKey($key) }catch{}
-                $obj = New-Object psobject
-                $obj | Add-Member NoteProperty 'RegKeyName' $(Split-Path $key -Leaf)
-                try{ $obj | Add-Member NoteProperty 'RegKeyParent' $(Join-Path $hive (Split-Path $key)) }catch{}
-                try{ $obj | Add-Member NoteProperty 'RegKeyChildren' $subregistry.GetSubKeyNames() }catch{}
+                $hash = @{}
+                $hash.Add('RegKeyName', $(Split-Path $subregistry -Leaf))
+                try{ $hash.Add('RegKeyParent', $(Join-Path $hive (Split-Path $key))) }catch{}
+                try{ $hash.Add('RegKeyChildren', $subregistry.GetSubKeyNames()) }catch{}
                 try{ $names = $subregistry.GetValueNames() }catch{}
                 foreach ($name in ($names | ? {$_})) {
-                    $obj | Add-Member NoteProperty $name $(
-                        $value = New-Object psobject
-                        $value | Add-Member NoteProperty 'Type' $subregistry.GetValueKind($name)
-                        $value | Add-Member NoteProperty 'Value' $subregistry.GetValue($name)
-                        $value
-                    )
+                    $hash.Add($name, $(
+                        [pscustomobject]@{
+                            Type = $subregistry.GetValueKind($name)
+                            Value = $subregistry.GetValue($name)
+                        }
+                    ))
                 }
-                $obj
+                [pscustomobject]$hash
             }
         }
     }
