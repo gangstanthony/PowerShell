@@ -32,17 +32,12 @@ function Get-PrinterClients {
             if ($printers -ne '-') {
                 $printers = @($printers | % {$_.Substring(2).Replace(',', '\').ToUpper()} | select -Unique) -join '; '
             }
-            
-            $remreg = [pscustomobject]@{
-                User = ([System.Security.Principal.SecurityIdentifier]($user)).Translate([System.Security.Principal.NTAccount]).Value
-                Printer = $printers
-            }
 
             [pscustomobject]@{
                 Computer = $comp
                 IP = $result.Address.ToString()
-                User = $remreg.user
-                Printer = $remreg.printer
+                User = ([System.Security.Principal.SecurityIdentifier]($user)).Translate([System.Security.Principal.NTAccount]).Value
+                Printer = $printers
             }
         }
     } else {
