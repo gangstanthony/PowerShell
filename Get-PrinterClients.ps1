@@ -54,4 +54,3 @@ function Get-PrinterClients {
         }
     }
 }
-
