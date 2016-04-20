@@ -5,12 +5,12 @@ function Get-SNMPData ($device) {
 
     begin {
         $snmp = New-Object -ComObject olePrn.OleSNMP
+        $ping = New-Object System.Net.NetworkInformation.Ping
     }
 
     process {
         $name = $desc = $addr = $ip = '-'
 
-        $ping = New-Object System.Net.NetworkInformation.Ping
         try {
             $result = $ping.Send($device)
         } catch {
