@@ -21,6 +21,7 @@ function Get-ComputerShares {
         $result = $null
     }
 
+    $sharename = $type = $comment = $ip = '-'
     if ($result.Status -eq 'Success') {
         # get the ip address
         $ip = $result.Address.ToString()
@@ -33,9 +34,9 @@ function Get-ComputerShares {
             [pscustomobject]@{
                 Computer = $comp
                 IP = $ip
-                ShareName = '-'
-                Type = '-'
-                Comment = '-'
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
             }
             return
         }
@@ -44,6 +45,7 @@ function Get-ComputerShares {
 
         foreach ($line in $netview) {
             $line = $line -split '\s{2,}'
+
             $sharename = $line[0]
             $type = $line[1]
             $comment = $line[2]
@@ -59,10 +61,10 @@ function Get-ComputerShares {
     } else {
         [pscustomobject]@{
             Computer = $comp
-            IP = '-'
-            ShareName = '-'
-            Type = '-'
-            Comment = '-'
+            IP = $ip
+            ShareName = $sharename
+            Type = $type
+            Comment = $comment
         }
     }
 }
