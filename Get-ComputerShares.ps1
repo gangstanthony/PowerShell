@@ -1,113 +1,68 @@
 # do NOT need admin rights
+# not reliable. tried once on ca-nor1-sb10, nothing, tried again, got results... :/
 
+# check all computers that show up on the network
 #''; net view | ? {$_ -match '^\\\\'} | % {$_.trim()} | % {if (ping1 $_.substring(2)) {net view $_}} | ? {$_ -and $_ -notmatch 'no entries|not found'} | % {if ($_ -match 'succ') {"`n"} else {$_}}
 
-# also, check into gwmi win32_share
+# need admin rights for this option
+#gwmi win32_share -comp 'lt-40132' | select pscomputername, type, name, caption, description | ft -a
 
 function Get-ComputerShares {
-    param(
-        [string[]]$comps
+    param (
+        [string]$comp = $env:COMPUTERNAME
     )
     
-    BEGIN {
-        filter ping1 {
-            param (
-                [Parameter(ValueFromPipeline=$true)]
-                $comps = $env:COMPUTERNAME,
-                $n = 1,
-                [switch]$showhost
-            )
+    if (!$comp) { throw 'No comps.' }
 
-            begin {
-                $ping = new-object System.Net.NetworkInformation.Ping
-            }
-
-            process {
-                if (!$comps) {Throw 'No host provided'}
-                foreach ($comp in $comps) {
-                    for ($i = 0; $i -lt $n; $i++) {
-                        try{ $result = $ping.send($comp, 500) }catch{}
-                        switch ($result.status) {
-                            'Success' { $success = $true }
-                            default { $success = $false }
-                        }
-                    }
-
-                    if ($showhost) {
-                        switch ($success) {
-                            $true { "True  $(try{ $result.address.tostring() }catch{ $comp })" }
-                            $false { "False $comp" }
-                        }
-                    } else {
-                        switch ($success) {
-                            $true { $true }
-                            $false { $false }
-                        }
-                    }
-                }
-            }
-        }
+    $ping = New-Object System.Net.NetworkInformation.Ping
+    try {
+        $result = $ping.Send($comp)
+    } catch {
+        $result = $null
     }
 
-    PROCESS {
-        if (!$comps) {Throw 'No comps.'}
+    if ($result.Status -eq 'Success') {
+        # get the ip address
+        $ip = $result.Address.ToString()
 
-        $total = $comps.Count
-        $starttime = $lasttime = Get-Date
-        foreach ($comp in $comps) {
-    
-            $index++
-            $currtime = (Get-Date) - $starttime
-            $avg = $currtime.TotalSeconds / $index
-            $last = ((Get-Date) - $lasttime).TotalSeconds
-            $left = $total - $index
-            Write-Progress `
-                -Activity ((
-                    "Get-ComputerShares $(Get-Date -f yyyy-MM-dd_HH:mm:ss)",
-                    "Total: $($currtime -replace '\..*')",
-                    "Avg: $('{0:N2}' -f $avg)",
-                    "Last: $('{0:N2}' -f $last)",
-                    "ETA: $('{0:N2}' -f (($avg * $left) / 60))",
-                    "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
-                ) -join ' ') `
-                -Status "$index of $total ($left left) [$('{0:N2}' -f (($index/$total)*100))%]" `
-                -CurrentOperation "COMP: $comp" `
-                -PercentComplete (($index/$total)*100)
-            $lasttime = Get-Date
+        # THE MAIN COMMAND
+        $netview = iex "cmd /c net view $comp 2>&1" | ? {$_}
 
-            if (ping1 $comp) {
-            
-                # get ip and site name
-                $ip = ping1 $comp -showhost
-                if ($ip -match '\[') {
-                    $ip = $ip -replace '^[^\[]+\[|\]$'
-                } else {
-                    $ip = $ip -replace '^[^0-9]+'
-                }
-
-                # THE MAIN COMMAND
-                $netview = cmd /c "net view $comp 2>&1" | ? {$_}
-
-                if ($netview.count -lt 5) { continue }
-
-                $netview = $netview | ? {$_  -match '  '}
-                $netview = $netview[1..($netview.count-1)]
-
-                foreach ($line in $netview) {
-                    $line = $line -split '  +'
-                    $sharename = $line[0]
-                    $type = $line[1]
-                    $comment = $line[2]
-
-                    [pscustomobject]@{
-                        IP = $ip
-                        Computer = if ($name) {$name} else {$comp}
-                        ShareName = $sharename
-                        Type = $type
-                        Comment = $comment
-                    }
-                }
+        # if there are less than 5 lines, no shares found
+        if ($netview.count -lt 5) {
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = '-'
+                Type = '-'
+                Comment = '-'
             }
+            return
+        }
+
+        $netview = $netview | ? {$_  -match '\s{2}'} | select -Skip 1
+
+        foreach ($line in $netview) {
+            $line = $line -split '\s{2,}'
+            $sharename = $line[0]
+            $type = $line[1]
+            $comment = $line[2]
+
+            [pscustomobject]@{
+                Computer = $comp
+                IP = $ip
+                ShareName = $sharename
+                Type = $type
+                Comment = $comment
+            }
+        }
+    } else {
+        [pscustomobject]@{
+            Computer = $comp
+            IP = '-'
+            ShareName = '-'
+            Type = '-'
+            Comment = '-'
         }
     }
 }
