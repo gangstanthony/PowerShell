@@ -104,13 +104,13 @@ function prompt {
 
     # Detect if the Shell is 32- or 64-bit host
     if ([System.IntPtr]::Size -eq 8) {
-        $ShellBits = 'x64 (64-bit) Host'
+        $ShellBits = 'x64 (64-bit)'
     } elseif ([System.IntPtr]::Size -eq 4) {
-        $ShellBits = 'x86 (32-bit) Host'
+        $ShellBits = 'x86 (32-bit)'
     }
 
     # Set Window Title to display Powershell version info, Shell bits, username and computername
-    $host.UI.RawUI.WindowTitle = "PowerShell v$MajorVersion.$MinorVersion | $ShellBits | $env:USERNAME @ $env:COMPUTERNAME"
+    $host.UI.RawUI.WindowTitle = "PowerShell v$MajorVersion.$MinorVersion $ShellBits | $env:USERNAME@$env:COMPUTERNAME"
 
     # Set Prompt Line 1 - include Date, file path location
     Write-Host(Get-Date -UFormat "%Y/%m/%d %H:%M:%S ($howlongwasthat) | ") -NoNewline -ForegroundColor DarkGreen
