@@ -11,7 +11,7 @@ function Get-SNMPPrinterInfo {
     process {
         foreach ($printer in $printers) {
             try {
-                $result = $ping.Send($comp)
+                $result = $ping.Send($printer)
             } catch {
                 $result = $null
             }
