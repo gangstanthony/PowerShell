@@ -16,7 +16,7 @@ function Save-ExcelasCSV {
             [System.GC]::WaitForPendingFinalizers()
         }
         
-        $xl = New-Object -ComObject 'Excel.Application'
+        $xl = New-Object -ComObject Excel.Application
         $xl.DisplayAlerts = $false
         $xl.Visible = $false
     }
