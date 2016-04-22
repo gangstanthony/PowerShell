@@ -19,7 +19,7 @@ function Save-CSVasExcel {
         }
         
         $CSVFile = Resolve-FullPath $CSVFile
-        $xl = New-Object -com 'Excel.Application'
+        $xl = New-Object -ComObject Excel.Application
     }
 
     PROCESS {
