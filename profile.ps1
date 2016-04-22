@@ -1,3 +1,5 @@
+# more ideas
+# https://github.com/sushihangover/SushiHangover-PowerShell/blob/master/Microsoft.PowerShell_profile.ps1
 
 c:
 cd\
@@ -127,7 +129,7 @@ function prompt {
     } else {        
         Write-Host '# User # ' -NoNewline -ForegroundColor DarkCyan
     }
-    Write-Host 'PS>' -NoNewLine -ForeGroundColor Green
+    Write-Host '»' -NoNewLine -ForeGroundColor Green
     ' ' # need this space to avoid the default white PS>
 } 
 
