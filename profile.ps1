@@ -33,6 +33,25 @@ function gj { Get-Job | select id, name, state | ft -a }
 function sj ($id = '*') { Get-Job $id | Stop-Job; gj }
 function rj { Get-Job | ? state -match 'comp' | Remove-Job }
 
+# https://community.spiceworks.com/topic/1570654-what-s-in-your-powershell-profile?page=1#entry-5746422
+function Test-Administrator {  
+    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
+    (New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)  
+}
+function Start-PsElevatedSession { 
+    # Open a new elevated powershell window
+    if ( !(Test-Administrator)) {
+        if ($host.Name -match 'ISE') {
+            start PowerShell_ISE.exe -Verb runas
+        } else {
+            start powershell -Verb runas
+        }
+    } else {
+        Write-Warning 'Session is already elevated'
+    }
+} 
+Set-Alias -Name su -Value Start-PsElevatedSession
+
 # https://www.reddit.com/r/PowerShell/comments/2x8n3y/getexcuse/
 function Get-Excuse {
     (Invoke-WebRequest http://pages.cs.wisc.edu/~ballard/bofh/excuses -OutVariable excuses).content.split([Environment]::NewLine)[(get-random $excuses.content.split([Environment]::NewLine).count)]
