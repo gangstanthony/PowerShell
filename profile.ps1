@@ -44,7 +44,7 @@ function Start-PsElevatedSession {
         if ($host.Name -match 'ISE') {
             start PowerShell_ISE.exe -Verb runas
         } else {
-            start powershell -Verb runas
+            start powershell -Verb runas -ArgumentList $('-noexit ' + ($args | Out-String))
         }
     } else {
         Write-Warning 'Session is already elevated'
@@ -139,10 +139,7 @@ function prompt {
 
     # Set Prompt Line 2
     # Check for Administrator elevation
-    $WId = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    $prp = New-Object System.Security.Principal.WindowsPrincipal($wid)
-    $Adm = [System.Security.Principal.WindowsBuiltInRole]::Administrator
-    $IsAdmin = $prp.IsInRole($Adm)
+    $IsAdmin = Test-Administrator
     if ($IsAdmin) {        
         Write-Host '# ADMIN # ' -NoNewline -ForegroundColor Cyan
     } else {        
