@@ -1,5 +1,6 @@
 # http://stackoverflow.com/questions/15797198/powershell-get-a-list-of-network-machines
 # switch -regex (NET.EXE VIEW) { "^\\\\(?<Name>\S+)\s+" {$matches.Name}}
+# $shares = $(switch -regex (net view) { '^\\\\(?<Name>\S+)' {$matches.Name}}) | % {net view $_}
 
 # do NOT need admin rights
 # not reliable. tried once on ca-nor1-sb10, nothing, tried again, got results... :/
