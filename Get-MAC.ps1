@@ -25,13 +25,13 @@ function Get-MAC ($comp = $env:computername) {
 
         $macstring = New-Object System.Text.StringBuilder
         foreach ($byte in $mac) {
-            [void]$macstring.Append(("{0:X2}" -f $byte) + "-")
+            [void]$macstring.Append(('{0:X2}' -f $byte) + '-')
         }
 
         [pscustomobject]@{
             Computer = $comp
             IP = $ip
-            MacAddress = $macstring.ToString().Trim("-")
+            MacAddress = $macstring.ToString().Trim('-')
         }
     }
 }
