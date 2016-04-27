@@ -1,18 +1,26 @@
+# https://thesurlyadmin.com/2014/08/04/getting-directory-information-fast/
+
 # check here for single file copy
 # http://serverfault.com/questions/52983/robocopy-transfer-file-and-not-folder
+# https://social.technet.microsoft.com/Forums/windowsserver/en-US/580695ae-0128-4df4-af2b-b11a6c985b22/move-files?forum=winserverpowershell
+#RoboCopy c:\source c:\destination myfile.txt /move
+#RoboCopy c:\source c:\destination *.txt /move
+
+# fix: write-verbose
 # 
-# Examples:
-#
-# Get-Files c:\temp -Recurse | ft -a
-#
-# Find folders that have more than 245 characters
-# Get-Files -Recurse | Select-Object Fullname, @{n='Length';e={$_.FullName.Length}} | Where-Object {$_.fullname.endswith('\')} | Where-Object {$_.Length -gt 245}
-#
+# List files (and folders) -recursively
+# Input: Array of folder paths
+# Output: PSObject; FullName, Date, Size; Sorted by FullName
+# 
+# FullName        Size        Date
+# --------        ----        ----
+# C:\bootmgr      398156      2012/07/26 03:44:30
+# 
 # Notes:
-#
 # This will not show dirs unless recursive
+# Directory must not end in '\'
 # also, maybe add something to show size in appropriate b/kb/mb/gb
-# -Include limits the resutls to files only!
+# could use [pscustomobject][ordered]@{}
 # 
 # /L = List only – don’t copy, timestamp or delete any files.
 # /S = copy Subdirectories, but not empty ones.
@@ -29,12 +37,13 @@
 # robocopy .\ null /l /e /njh /ndl /bytes /fp /nc /ts /xj /r:0 /w:0
 
 function Get-Files {
-    param (
-        [array]$Path = $PWD,
-        [array]$Include,
-        [switch]$NameOnly,
-        [switch]$Recurse
-    )
+    param (
+        [string[]]$Path = $PWD,
+        [string[]]$Include,
+        [switch]$Recurse,
+        [switch]$FoldersOnly,
+        [switch]$UseDir
+    )
     
     begin {
         function CreateFolderObject {
@@ -50,48 +59,74 @@ function Get-Files {
     }
 
     process {
-        $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
-        if ($Recurse) {$params += '/E'}
-        if ($Include) {$params += $Include}
-        foreach ($dir in $Path) {
-            foreach ($line in $(robocopy $dir NULL $params)) {
-                # folder
-                if ($line -match '\s+\d+\s+(?<FullName>.*\\)$') {
-                    if ($Include) {
-                        if ($matches.FullName -like "*$($include.replace('*',''))*") {
+        if (!$UseDir) {
+            $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
+            if ($Recurse) {$params += '/E'}
+            if ($Include) {$params += $Include}
+            foreach ($dir in $Path) {
+                foreach ($line in $(robocopy $dir NULL $params)) {
+                    # folder
+                    if ($line -match '\s+\d+\s+(?<FullName>.*\\)$') {
+                        if ($Include) {
+                            if ($matches.FullName -like "*$($include.replace('*',''))*") {
+                                if ($NameOnly) {
+                                    $matches.FullName
+                                } else {
+                                    CreateFolderObject
+                                }
+                            }
+                        } else {
                             if ($NameOnly) {
                                 $matches.FullName
                             } else {
                                 CreateFolderObject
                             }
                         }
-                    } else {
+
+                    # file
+                    } elseif ($line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
                         if ($NameOnly) {
                             $matches.FullName
                         } else {
-                            CreateFolderObject
+                            New-Object psobject -Property @{
+                                FullName = $matches.FullName
+                                DirectoryName = Split-Path $matches.FullName
+                                Name = Split-Path $matches.FullName -Leaf
+                                Size = [int64]$matches.Size
+                                Extension = '.' + ($matches.FullName.split('.')[-1])
+                                DateModified = $matches.Date
+                            }
+                        }
+                    } else {
+                        # Uncomment to see all lines that were not matched in the regex above.
+                        #Write-host $line
+                    }
+                }
+            }
+        } else {
+            $params = @('/a-d', '/-c') # ,'/TA' for last access time instead of date modified (default)
+            if ($Recurse) { $params += '/S' }
+            foreach ($dir in $Path) {
+                foreach ($line in $(cmd /c dir $dir $params)) {
+                    switch -Regex ($line) {
+
+                        # folder
+                        'Directory of (?<Folder>.*)' {
+                            $lastDirName = -join ($matches.Folder, '\')
+                        }
+
+                        # file
+                        '(?<Date>.* [ap]m) +(?<Size>.*?) (?<Name>.*)' {
+                            [PSCustomObject]@{
+                                Folder = $CurrentDir
+                                Name = $Matches.Name
+                                Size = $Matches.Size
+                                LastWriteTime = [datetime]$Matches.Date
+                            }
                         }
                     }
-
-                # file
-                } elseif ($line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
-                    if ($NameOnly) {
-                        $matches.FullName
-                    } else {
-                        New-Object psobject -Property @{
-                            FullName = $matches.FullName
-                            DirectoryName = Split-Path $matches.FullName
-                            Name = Split-Path $matches.FullName -Leaf
-                            Size = [int64]$matches.Size
-                            Extension = '.' + ($matches.FullName.split('.')[-1])
-                            DateModified = $matches.Date
-                        }
-                    }
-                } else {
-                    # Uncomment to see all lines that were not matched in the regex above.
-                    #Write-host $line
-                }
-            }
-        }
+                }
+            }
+        }
     }
 }
