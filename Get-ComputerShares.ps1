@@ -1,3 +1,6 @@
+# http://stackoverflow.com/questions/15797198/powershell-get-a-list-of-network-machines
+# switch -regex (NET.EXE VIEW) { "^\\\\(?<Name>\S+)\s+" {$matches.Name}}
+
 # do NOT need admin rights
 # not reliable. tried once on ca-nor1-sb10, nothing, tried again, got results... :/
 
