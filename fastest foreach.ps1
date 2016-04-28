@@ -55,3 +55,23 @@ $a5 | measure -Sum | % {$_.sum}
 ''
 '$b | % processname'
 $a6 | measure -Sum | % {$_.sum}
+
+<# results
+$b.processname
+4733275
+
+foreach ($p in $b) {$p.ProcessName}
+4771465
+
+@($b).foreach{$_.processname}
+6985770
+
+$b | % {$_.processname}
+9418136
+
+$b | select -ExpandProperty processname
+9657625
+
+$b | % processname
+10626175
+#>
