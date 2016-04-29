@@ -90,7 +90,7 @@ function Get-MyADObject {
             PostalCode        = [string]$object.properties.postalcode
             Company           = [string]$object.properties.company
             AccountIsLocked   = $(try{ if ((([adsi]$object.path).psbase.InvokeGet('IsAccountLocked')) -eq $true) {$true} else {$false} }catch{ $null })
-            AccountIsDisabled = if (([string]$object.Properties.useraccountcontrol -band 2) -eq 0) {$false} else {$true}
+            AccountIsDisabled = [bool]($object.Properties.useraccountcontrol -band 2)
             member            = $object.properties.member
             memberof          = $object.properties.memberof
         }
