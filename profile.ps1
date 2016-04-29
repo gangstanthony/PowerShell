@@ -52,6 +52,19 @@ function Start-PsElevatedSession {
 } 
 Set-Alias -Name su -Value Start-PsElevatedSession
 
+# http://www.lavinski.me/my-powershell-profile/
+function elevate-process
+{
+    $file, [string]$arguments = $args
+    $psi = new-object System.Diagnostics.ProcessStartInfo $file
+    $psi.Arguments = $arguments
+    $psi.Verb = 'runas'
+
+    $psi.WorkingDirectory = Get-Location
+    [System.Diagnostics.Process]::Start($psi)
+}
+Set-Alias sudo elevate-process
+
 # https://www.reddit.com/r/PowerShell/comments/2x8n3y/getexcuse/
 function Get-Excuse {
     (Invoke-WebRequest http://pages.cs.wisc.edu/~ballard/bofh/excuses -OutVariable excuses).content.split([Environment]::NewLine)[(get-random $excuses.content.split([Environment]::NewLine).count)]
