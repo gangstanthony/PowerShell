@@ -8,7 +8,12 @@ function Get-InstalledApps {
     foreach ($comp in $comps) {
         $keys = '','\Wow6432Node'
         foreach ($key in $keys) {
-            $apps = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall").GetSubKeyNames()
+            try {
+                $apps = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall").GetSubKeyNames()
+            } catch {
+                continue
+            }
+
             foreach ($app in $apps) {
                 $program = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$comp).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app")
                 $name = $program.GetValue('DisplayName')
