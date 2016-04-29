@@ -53,8 +53,7 @@ function Start-PsElevatedSession {
 Set-Alias -Name su -Value Start-PsElevatedSession
 
 # http://www.lavinski.me/my-powershell-profile/
-function elevate-process
-{
+function Elevate-Process {
     $file, [string]$arguments = $args
     $psi = new-object System.Diagnostics.ProcessStartInfo $file
     $psi.Arguments = $arguments
@@ -63,7 +62,7 @@ function elevate-process
     $psi.WorkingDirectory = Get-Location
     [System.Diagnostics.Process]::Start($psi)
 }
-Set-Alias sudo elevate-process
+Set-Alias sudo Elevate-Process
 
 # https://www.reddit.com/r/PowerShell/comments/2x8n3y/getexcuse/
 function Get-Excuse {
