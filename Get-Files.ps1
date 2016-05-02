@@ -47,7 +47,7 @@ function Get-Files {
     
     begin {
         function CreateFolderObject {
-            New-Object psobject -Property @{
+            [pscustomobject]@{
                 FullName = $matches.FullName
                 DirectoryName = Split-Path $matches.FullName
                 Name = (Split-Path $matches.FullName -Leaf) + '\'
@@ -88,7 +88,7 @@ function Get-Files {
                         if ($NameOnly) {
                             $matches.FullName
                         } else {
-                            New-Object psobject -Property @{
+                            [pscustomobject]@{
                                 FullName = $matches.FullName
                                 DirectoryName = Split-Path $matches.FullName
                                 Name = Split-Path $matches.FullName -Leaf
@@ -117,7 +117,7 @@ function Get-Files {
 
                         # file
                         '(?<Date>.* [ap]m) +(?<Size>.*?) (?<Name>.*)' {
-                            [PSCustomObject]@{
+                            [pscustomobject]@{
                                 Folder = $CurrentDir
                                 Name = $Matches.Name
                                 Size = $Matches.Size
