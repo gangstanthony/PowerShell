@@ -10,6 +10,11 @@
 # adsi fix
 # http://stackoverflow.com/questions/31949541/print-local-group-members-in-powershell-5-0
 
+# AccountManagement method
+# http://stackoverflow.com/questions/30202452/list-all-local-administrator-accounts-excluding-domain-admin-and-local-admin
+# http://blogs.msmvps.com/richardsiddaway/2009/04/21/user-module-local-account/
+# https://github.com/lazywinadmin/PowerShell/blob/master/TOOL-Get-LocalGroupMember/Get-LocalGroupMember.ps1
+
 # examples
 # https://www.reddit.com/r/PowerShell/comments/4hmpj6/organising_outfile/d2rfrbs
 
