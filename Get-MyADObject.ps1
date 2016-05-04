@@ -1,4 +1,7 @@
-function Get-MyADObject {
+# alternate credentials
+# https://www.reddit.com/r/PowerShell/comments/40zmmf/converting_a_vb_script_to_powershellabsolutely/
+
+function Get-MADObject {
     param (
         [string]$name,
         [string]$description,
@@ -7,8 +10,8 @@ function Get-MyADObject {
         $type
     )
     
-    if (!$name -and !$description -and !$searchroot) {
-        Throw 'Please provide a search term or root.'
+    if (!$name -and !$description -and !$searchroot -and !$type) {
+        Throw 'Please provide a type, search term, or root.'
     } elseif (!$name -and !$description) {
         $name = '*'
     }
@@ -40,6 +43,7 @@ function Get-MyADObject {
     $filter += ')'
     
     $searcher = [adsisearcher]$filter
+    $searcher.PageSize = 200
     if ($searchroot) {
         if ($searchroot.EndsWith('/')) { $searchroot = $searchroot.Substring(0, $searchroot.Length - 1) }
         $searchrootarray = $searchroot.split('/')
@@ -54,10 +58,10 @@ function Get-MyADObject {
         $newsearchroot = -join $newsearchroot
         $searcher.SearchRoot = [adsi]$newsearchroot
     }
-    $searcher.PropertiesToLoad.AddRange(('name', 'displayname', 'sn', 'givenname', 'objectcategory', 'whencreated', 'whenchanged', 'pwdlastset', 'lastlogon', 'distinguishedname', 'samaccountname', 'userprincipalname', 'mail', 'operatingsystem', 'description', 'title', 'department', 'telephonenumber', 'mobile', 'homedirectory', 'homedrive', 'c', 'co', 'st', 'l', 'streetaddress', 'postalcode', 'company', 'useraccountcontrol', 'member', 'memberof'))
+    $searcher.PropertiesToLoad.AddRange(('name', 'displayname', 'sn', 'givenname', 'objectcategory', 'whencreated', 'whenchanged', 'pwdlastset', 'lastlogon', 'distinguishedname', 'samaccountname', 'userprincipalname', 'mail', 'operatingsystem', 'description', 'title', 'department', 'manager', 'telephonenumber', 'mobile', 'homedirectory', 'homedrive', 'c', 'co', 'st', 'l', 'streetaddress', 'postalcode', 'company', 'useraccountcontrol', 'member', 'memberof'))
     
-    $maxpwdage = ([adsi]"WinNT://$env:userdomain").maxpasswordage.value/86400
-    $result = foreach ($object in $searcher.FindAll()){
+    $maxpwdage = ([adsi]"WinNT://$env:userdomain").maxpasswordage.value / 86400
+    $(foreach ($object in $searcher.FindAll()) {
         New-Object -TypeName PSObject -Property @{
             Name              = [string]$object.properties.name
             DisplayName       = [string]$object.properties.displayname
@@ -78,6 +82,7 @@ function Get-MyADObject {
             Description       = [string]$object.properties.description
             Title             = [string]$object.properties.title
             Department        = [string]$object.properties.department
+            Manager           = [string]$object.properties.manager
             TelephoneNumber   = [string]$object.properties.telephonenumber
             Mobile            = [string]$object.properties.mobile
             HomeDirectory     = [string]$object.properties.homedirectory
@@ -94,7 +99,5 @@ function Get-MyADObject {
             member            = $object.properties.member
             memberof          = $object.properties.memberof
         }
-    }
-    $result = $result | select name, displayname, lastname, firstname, objectcategory, whencreated, whenchanged, pwdlastset, PwdIsExpired, PwdDoesNotExpire, lastlogon, distinguishedname, samaccountname, userprincipalname, mail, operatingsystem, description, title, department, telephonenumber, mobile, homedirectory, homedrive, country1, country2, state, city, streetaddress, postalcode, company, accountislocked, accountisdisabled, member, memberof
-    $result
+    }) | select name, displayname, lastname, firstname, objectcategory, whencreated, whenchanged, pwdlastset, PwdIsExpired, PwdDoesNotExpire, lastlogon, distinguishedname, samaccountname, userprincipalname, mail, operatingsystem, description, title, department, manager, telephonenumber, mobile, homedirectory, homedrive, country1, country2, state, city, streetaddress, postalcode, company, accountislocked, accountisdisabled, member, memberof
 }
