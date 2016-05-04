@@ -1,6 +1,8 @@
 # Requires the PSRemoteRegistry module
 # https://psremoteregistry.codeplex.com/
 
+# https://blogs.technet.microsoft.com/heyscriptingguy/2006/06/21/how-can-i-use-windows-powershell-to-start-a-service-on-a-remote-computer/
+
 function Enable-PSRemoting {
     param (
         [string[]]$Computers = (Read-Host 'Enter computer name'),
