@@ -106,27 +106,6 @@ function ej ([switch]$more) {
 #function py { . C:\Python27\python.exe }
 function py { . C:\Users\admin\AppData\Local\Programs\Python\Python35-32\python.exe }
 
-function ydl {
-    param (
-        [string]$song = $(get-clipboard),
-        [switch]$u,
-        [string]$ydlpath = 'C:\Users\admin\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe'
-    )
-    
-    if ($u) {
-        start $ydlpath -ArgumentList '--update'
-    }
-    
-    if (!(Test-Path c:\temp)) {md c:\temp | Out-Null}
-    cd c:\temp
-
-    if ($song -match 'youtube') {
-        . $ydlpath --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s' -f 17 $song
-    } elseif ($song -match 'soundcloud') {
-        . $ydlpath $song -o '%(title)s.%(ext)s'
-    }
-}
-
 function date {get-date -f 'yyyy-MM-dd_HH.mm.ss'}
 # 'yyyyMMdd_HHmmss.fffffff'
 # 'yyyy/MM/dd HH:mm:ss.fffffff'
