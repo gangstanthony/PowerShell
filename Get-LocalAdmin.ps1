@@ -29,7 +29,7 @@ function Get-LocalAdmin {
         Add-Type -AssemblyName System.DirectoryServices.AccountManagement
         $ctype = [System.DirectoryServices.AccountManagement.ContextType]::Machine
         $idtype = [System.DirectoryServices.AccountManagement.IdentityType]::SamAccountName
-        $context = New-Object -TypeName System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ctype, $comp
+        $context = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ctype, $comp
         try{ $obj = [System.DirectoryServices.AccountManagement.GroupPrincipal]::FindByIdentity($context, $idtype, 'Administrators') }catch{ continue }
         $obj.Members | % {
             [pscustomobject]@{
