@@ -33,7 +33,10 @@ function Menu {
         for ($i = 0; $i -lt $Object.Count; $i++) {
             Write-Host "$('{0:D2}' -f ($i+1)). $($Object[$i])"
         }
-        if ($Footer) { Write-Host $Footer }
+        
+        if ($Footer) {
+            Write-Host $Footer
+        }
 
         Write-Host ''
 
