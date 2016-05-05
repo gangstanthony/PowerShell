@@ -8,7 +8,8 @@ function Menu {
             ValueFromPipeline=$True,
             ValueFromPipelinebyPropertyName=$True)]
         [object[]]$Object,
-        $Prompt,
+        [string]$Header,
+        [string]$Footer,
         [switch]$AllowCancel,
         [switch]$AllowMultiple
     )
@@ -21,8 +22,8 @@ function Menu {
     Write-Host ''
 
     do {
-        if ($Prompt) {
-            Write-Host $Prompt
+        if ($Header) {
+            Write-Host $Header
         } elseif ($AllowCancel) {
             Write-Host 'Choose an option, or enter "C" to cancel'
         } else {
@@ -32,6 +33,7 @@ function Menu {
         for ($i = 0; $i -lt $Object.Count; $i++) {
             Write-Host "$('{0:D2}' -f ($i+1)). $($Object[$i])"
         }
+        if ($Footer) { Write-Host $Footer }
 
         Write-Host ''
 
