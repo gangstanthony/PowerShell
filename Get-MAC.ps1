@@ -1,5 +1,7 @@
 # http://myitpath.blogspot.com/2010/03/net-and-netbios-name-resolution.html
 
+# this gives an error if ip is IPv6 address
+
 function Get-MAC ($comp = $env:computername) {
     $ping = New-Object System.Net.NetworkInformation.Ping
     $result = $ping.Send($comp)
