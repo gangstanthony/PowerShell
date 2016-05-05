@@ -25,6 +25,7 @@ function Get-InstalledApps {
                         Publisher = $program.GetValue('Publisher')
                         InstallDate = $program.GetValue('InstallDate')
                         UninstallString = $program.GetValue('UninstallString')
+                        Bits = $(if ($key -eq '\Wow6432Node') {'64'} else {'32'})
                     }
                 }
             }
