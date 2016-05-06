@@ -40,7 +40,7 @@ function Test-Administrator {
 }
 function Start-PsElevatedSession { 
     # Open a new elevated powershell window
-    if ( !(Test-Administrator)) {
+    if (!(Test-Administrator)) {
         if ($host.Name -match 'ISE') {
             start PowerShell_ISE.exe -Verb runas
         } else {
