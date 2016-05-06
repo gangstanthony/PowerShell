@@ -114,7 +114,7 @@ function date {get-date -f 'yyyy-MM-dd_HH.mm.ss'}
 # http://kevinmarquette.blogspot.com/2015/11/here-is-my-custom-powershell-prompt.html
 # https://www.reddit.com/r/PowerShell/comments/46hetc/powershell_profile_config/
 $PSLogPath = ("{0}\Documents\WindowsPowerShell\log\{1:yyyyMMdd}-{2}.log" -f $env:USERPROFILE, (Get-Date), $PID)
-if (!([System.IO.Directory]::Exists($(Split-Path $PSLogPath)))) { md $(Split-Path $PSLogPath) | Out-Null }
+$null = md $(Split-Path $PSLogPath) -ea 0
 Add-Content -Value "# $(Get-Date) $env:username $env:computername" -Path $PSLogPath
 Add-Content -Value "# $(Get-Location)" -Path $PSLogPath
 function prompt {
