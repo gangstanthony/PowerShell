@@ -2,7 +2,7 @@
 
 function touch ([string]$file) {
     if ($file -eq $null) {
-        throw "No filename supplied"
+        throw 'No filename supplied'
     }
 
     $dir = Split-Path $file
