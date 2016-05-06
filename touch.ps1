@@ -8,7 +8,7 @@ function touch ([string]$file) {
     $dir = Split-Path $file
 
     if (Test-Path $file) {
-        (Get-ChildItem $file).LastWriteTime = Get-Date
+        (Get-Item $file).LastWriteTime = Get-Date
     } elseif ($dir -and !(Test-Path $dir)) {
         $null = mkdir $dir
         $null > $file
