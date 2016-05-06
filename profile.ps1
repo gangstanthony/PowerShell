@@ -183,8 +183,8 @@ $p = {
 
 function lunch {
     sleep 3000
-    write-host •
-    messagebox clock in
+    Write-Host •
+    MessageBox clock in
 }
 
 function wimi {
@@ -192,9 +192,10 @@ function wimi {
 }
 
 function java {
-    param(
+    param (
         [switch]$download
     )
+    
     if ($download) {
         $page = iwr http://java.com/en/download/windows_offline.jsp
         $version = $page.RawContent -split "`n" | ? {$_ -match 'recommend'} | select -f 1 | % {$_ -replace '^[^v]+| \(.*$'}
