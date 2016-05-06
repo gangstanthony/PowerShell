@@ -200,7 +200,7 @@ function java {
         $page = iwr http://java.com/en/download/windows_offline.jsp
         $version = $page.RawContent -split "`n" | ? {$_ -match 'recommend'} | select -f 1 | % {$_ -replace '^[^v]+| \(.*$'}
         $link = $page.links.href | ? {$_ -match '^http.*download'} | select -f 1
-        iwr $link -outfile "c:\temp\Java $version.exe"
+        iwr $link -OutFile "c:\temp\Java $version.exe"
     } else {
         $(iwr http://java.com/en/download).Content.Split("`n") | ? {$_ -match 'version'} | select -f 1
     }
