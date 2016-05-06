@@ -149,8 +149,7 @@ function prompt {
 
     # Set Prompt Line 2
     # Check for Administrator elevation
-    $IsAdmin = Test-Administrator
-    if ($IsAdmin) {        
+    if (Test-Administrator) {
         Write-Host '# ADMIN # ' -NoNewline -ForegroundColor Cyan
     } else {        
         Write-Host '# User # ' -NoNewline -ForegroundColor DarkCyan
