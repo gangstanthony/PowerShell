@@ -10,9 +10,7 @@ function touch ([string]$file) {
     if (Test-Path $file) {
         (Get-ChildItem $file).LastWriteTime = Get-Date
     } elseif (Test-Path $dir) {
-        echo $null > $file
-    } else {
-        md $dir | Out-Null
+        $null = mkdir $dir -ErrorAction Continue
         echo $null > $file
     }
 }
