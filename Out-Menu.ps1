@@ -2,7 +2,7 @@
 # https://www.reddit.com/r/PowerShell/comments/49tqgx/need_some_help_with_an_automation_script_im/
 # http://www.powertheshell.com/input_psv3/
 
-function Menu {
+function Out-Menu {
     Param (
         [Parameter(
             ValueFromPipeline=$True,
@@ -75,3 +75,5 @@ function Menu {
         }
     } while (!$ok)
 }
+
+Set-Alias -Name Menu -Value Out-Menu
