@@ -25,7 +25,7 @@ function Get-MADObject {
 
     if ($name) {
         #$filter += "(|(samaccountname=*$name*)(name=*$name*)(displayname=*$name*)(userprincipalname=*$name*))"
-        $filter += "(|(samaccountname=$name)(name=$name)(sn=$name)(givenname=$name)(mail=$name@mammoet.com))"
+        $filter += "(|(samaccountname=$name)(name=$name)(sn=$name)(givenname=$name)(mail=$name@domain.com))"
     }
     if ($description) {
         if ($description -match '|') {
