@@ -3,8 +3,9 @@
 # http://www.powertheshell.com/input_psv3/
 
 function Out-Menu {
-    Param (
+    param (
         [Parameter(
+            Mandatory=$true,
             ValueFromPipeline=$True,
             ValueFromPipelinebyPropertyName=$True)]
         [object[]]$Object,
