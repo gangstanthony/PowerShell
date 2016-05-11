@@ -52,7 +52,7 @@ function Get-Files {
                 DirectoryName = Split-Path $matches.FullName
                 Name = (Split-Path $matches.FullName -Leaf) + '\'
                 Size = $null
-                Extension = $null
+                Extension = '[Directory]'
                 DateModified = $null
             }
         }
@@ -94,7 +94,7 @@ function Get-Files {
                                 DirectoryName = Split-Path $matches.FullName
                                 Name = $name
                                 Size = [int64]$matches.Size
-                                Extension = $(if ($name.IndexOf('.') -ne -1) {'.' + $name.split('.')[-1]})
+                                Extension = $(if ($name.IndexOf('.') -ne -1) {'.' + $name.split('.')[-1]} else {'[None]'})
                                 DateModified = $matches.Date
                             }
                         }
