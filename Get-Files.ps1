@@ -88,12 +88,13 @@ function Get-Files {
                         if ($NameOnly) {
                             $matches.FullName
                         } else {
+                            $name = Split-Path $matches.FullName -Leaf
                             [pscustomobject]@{
                                 FullName = $matches.FullName
                                 DirectoryName = Split-Path $matches.FullName
-                                Name = Split-Path $matches.FullName -Leaf
+                                Name = $name
                                 Size = [int64]$matches.Size
-                                Extension = '.' + ($matches.FullName.split('.')[-1])
+                                Extension = '.' + $name.split('.')[-1]
                                 DateModified = $matches.Date
                             }
                         }
