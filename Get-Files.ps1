@@ -94,7 +94,7 @@ function Get-Files {
                                 DirectoryName = Split-Path $matches.FullName
                                 Name = $name
                                 Size = [int64]$matches.Size
-                                Extension = '.' + $name.split('.')[-1]
+                                Extension = $(if ($name.IndexOf('.') -ne -1) {'.' + $name.split('.')[-1]})
                                 DateModified = $matches.Date
                             }
                         }
