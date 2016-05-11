@@ -2,6 +2,8 @@
 # https://www.reddit.com/r/PowerShell/comments/49tqgx/need_some_help_with_an_automation_script_im/
 # http://www.powertheshell.com/input_psv3/
 
+# https://gallery.technet.microsoft.com/scriptcenter/Out-Menu-41259908
+
 # EXAMPLE1
 # $folder = Get-ChildItem | Out-Menu
 # lists folder contents and prompts user to select one of the items
