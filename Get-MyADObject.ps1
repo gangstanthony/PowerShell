@@ -45,8 +45,7 @@ function Get-MADObject {
     $searcher = [adsisearcher]$filter
     $searcher.PageSize = 200
     if ($searchroot) {
-        if ($searchroot.EndsWith('/')) { $searchroot = $searchroot.Substring(0, $searchroot.Length - 1) }
-        $searchrootarray = $searchroot.split('/')
+        $searchrootarray = $searchroot.split('/') | ? {$_}
         $newsearchroot = @('LDAP://')
         $newsearchroot += for ($i = $searchrootarray.Length - 1; $i -ge 0; $i--) {
             if ($i -ne 0) {
