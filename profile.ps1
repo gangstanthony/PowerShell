@@ -106,7 +106,7 @@ function ej ([switch]$more) {
 #function py { . C:\Python27\python.exe }
 function py { . C:\Users\admin\AppData\Local\Programs\Python\Python35-32\python.exe }
 
-function date {get-date -f 'yyyy-MM-dd_HH.mm.ss'}
+#function date {get-date -f 'yyyy-MM-dd_HH.mm.ss'}
 # 'yyyyMMdd_HHmmss.fffffff'
 # 'yyyy/MM/dd HH:mm:ss.fffffff'
 
