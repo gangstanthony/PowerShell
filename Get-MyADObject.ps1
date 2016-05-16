@@ -44,7 +44,7 @@ function Get-MADObject {
     
     $searcher = [adsisearcher]$filter
     $searcher.PageSize = 200
-    if ($searchroot) {
+    if ($searchroot) { # this part allows you to enter like 'domain.com/someou/anotherou', but it does not account for containers
         $searchrootarray = $searchroot.split('/') | ? {$_}
         $newsearchroot = @('LDAP://')
         $newsearchroot += for ($i = $searchrootarray.Length - 1; $i -ge 0; $i--) {
