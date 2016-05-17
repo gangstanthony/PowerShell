@@ -77,6 +77,9 @@ function fourdigitpw {
     $fpw
 }
 
+# https://www.reddit.com/r/PowerShell/comments/447t7q/yet_another_random_password_script/
+# Add-Type -AssemblyName System.Web
+# [System.Web.Security.Membership]::GeneratePassword(12,5)
 # random password like Asdf1234
 function rpw {
     $pw = ''
