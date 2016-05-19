@@ -41,11 +41,17 @@ function Get-Files {
         [string[]]$Path = $PWD,
         [string[]]$Include,
         [switch]$Recurse,
-        [switch]$FoldersOnly,
+        [switch]$FullName,
+        [switch]$Directory,
+        [switch]$File,
         [switch]$UseDir
     )
     
     begin {
+        if ($Directory -and $File) {
+            throw 'Cannot use both -Directory and -File at the same time.'
+        }
+
         function CreateFolderObject {
             [pscustomobject]@{
                 FullName = $matches.FullName
@@ -66,17 +72,17 @@ function Get-Files {
             foreach ($dir in $Path) {
                 foreach ($line in $(robocopy $dir NULL $params)) {
                     # folder
-                    if ($line -match '\s+\d+\s+(?<FullName>.*\\)$') {
+                    if (!$File -and $line -match '\s+\d+\s+(?<FullName>.*\\)$') {
                         if ($Include) {
                             if ($matches.FullName -like "*$($include.replace('*',''))*") {
-                                if ($NameOnly) {
+                                if ($FullName) {
                                     $matches.FullName
                                 } else {
                                     CreateFolderObject
                                 }
                             }
                         } else {
-                            if ($NameOnly) {
+                            if ($FullName) {
                                 $matches.FullName
                             } else {
                                 CreateFolderObject
@@ -84,8 +90,8 @@ function Get-Files {
                         }
 
                     # file
-                    } elseif ($line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
-                        if ($NameOnly) {
+                    } elseif (!$Directory -and $line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
+                        if ($FullName) {
                             $matches.FullName
                         } else {
                             $name = Split-Path $matches.FullName -Leaf
