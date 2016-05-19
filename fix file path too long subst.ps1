@@ -7,7 +7,9 @@ $source = 'c:\temp'
 
 # this will load the Get-Files function which uses robocopy
 # feel free to check it out before running the script
-try{ iex (iwr https://raw.githubusercontent.com/gangstanthony/PowerShell/master/Get-Files.ps1).rawcontent -ea 0 }catch{}
+try{ iex (iwr https://raw.githubusercontent.com/gangstanthony/PowerShell/master/Get-Files.ps1).content -ea 0 }catch{}
+
+if (!(gcm get-files -ea 0)) { throw 'Command not found: Get-Files' }
 
 $files = Get-Files -Path $source -FullName -File -Recurse
 
