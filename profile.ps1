@@ -5,7 +5,7 @@ c:
 cd\
 
 # Runs all .ps1 files in this module's directory
-Get-ChildItem -Path $PSScriptRoot\*.ps1 | Foreach-Object { . $_.FullName }
+Get-ChildItem -Path $PSScriptRoot\*.ps1 | ? name -NotMatch 'Microsoft.PowerShell_profile' | Foreach-Object { . $_.FullName }
 
 $env:path = @(
     $env:path
