@@ -3,7 +3,7 @@
 # the title is not very descriptive, but it's basically write-host $($a | fl * | out-string)
 
 function Write-Object {
-    Param (
+    param (
         [Parameter(
             ValueFromPipeline=$True,
             ValueFromPipelinebyPropertyName=$True)]
@@ -16,7 +16,9 @@ function Write-Object {
         $Object = @($input)
     }
     
-    if (!$Object) { Throw 'Must provide an object.' }
+    if (!$Object) {
+        throw 'Must provide an object.'
+    }
     
     if ($Header) {
         Write-Host $Header
