@@ -53,10 +53,15 @@ function Get-Files {
         }
 
         function CreateFolderObject {
+            $name = New-Object System.Text.StringBuilder
+            $null = $name.Append((Split-Path $matches.FullName -Leaf))
+            if (-not $name.ToString().EndsWith('\')) {
+                $null = $name.Append('\')
+            }
             [pscustomobject]@{
                 FullName = $matches.FullName
                 DirectoryName = Split-Path $matches.FullName
-                Name = (Split-Path $matches.FullName -Leaf) + '\'
+                Name = $name.ToString()
                 Size = $null
                 Extension = '[Directory]'
                 DateModified = $null
