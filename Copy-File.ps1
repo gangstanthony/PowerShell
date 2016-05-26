@@ -9,7 +9,6 @@ function Copy-File {
     )
 
     # do this regardless of whether the source is a file or a folder
-    # might be able to just use Get-ChildItem
     $files = Get-ChildItem $Path -Recurse -File
 
     $source = Split-Path $Path
