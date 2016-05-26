@@ -4,7 +4,7 @@ function Copy-File {
     param (
         [string]$Path,
         [string]$Destination,
-        [switch]$Overwrite = $false
+        [switch]$Overwrite
     )
 
     # do this regardless of whether the source is a file or a folder
