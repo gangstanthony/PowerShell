@@ -1,6 +1,6 @@
 # http://stackoverflow.com/questions/2434133/progress-during-large-file-copy-copy-item-write-progress
 
-function Copy-Files {
+function Copy-File {
     param (
         [string]$Path,
         [string]$Destination,
@@ -109,4 +109,4 @@ function Copy-Files {
     $sw1.Reset()
 }
 
-# Copy-Files 'C:\temp\test1' 'C:\temp\test2'
+# Copy-File 'C:\temp\test1' 'C:\temp\test2'
