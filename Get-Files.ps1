@@ -38,19 +38,22 @@
 
 function Get-Files {
     param (
-        [string[]]$Path = $PWD,
+        [string]$Path = $PWD,
         [string[]]$Include,
         [switch]$Recurse,
         [switch]$FullName,
         [switch]$Directory,
         [switch]$File,
-        [switch]$UseDir
+        [ValidateSet('Robocopy', 'Dir', 'EnumerateFiles')]
+        [string]$Method = 'Robocopy'
     )
     
     begin {
         if ($Directory -and $File) {
             throw 'Cannot use both -Directory and -File at the same time.'
         }
+
+        $Path = Resolve-Path $Path
 
         function CreateFolderObject {
             $name = New-Object System.Text.StringBuilder
@@ -70,7 +73,7 @@ function Get-Files {
     }
 
     process {
-        if (!$UseDir) {
+        if ($Method -eq 'Robocopy') {
             $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
             if ($Recurse) {$params += '/E'}
             if ($Include) {$params += $Include}
@@ -115,7 +118,7 @@ function Get-Files {
                     }
                 }
             }
-        } else {
+        } elseif ($Method -eq 'Dir') {
             $params = @('/a-d', '/-c') # ,'/TA' for last access time instead of date modified (default)
             if ($Recurse) { $params += '/S' }
             foreach ($dir in $Path) {
@@ -139,6 +142,14 @@ function Get-Files {
                     }
                 }
             }
+        } elseif ($Method -eq 'EnumerateFiles' -and $FullName) {
+            if ($Recurse) {
+                [System.IO.Directory]::EnumerateFiles($Path, '*.*', 'AllDirectories') | % {$_}
+            } else {
+                [System.IO.Directory]::EnumerateFiles($Path, '*.*') | % {$_}
+            }
+        } elseif ($Method -eq 'EnumerateFiles') {
+            throw 'Must use -FullName switch when using EnumerateFiles'
         }
     }
 }
