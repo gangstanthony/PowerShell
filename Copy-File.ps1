@@ -12,7 +12,8 @@ function Copy-File {
     $files = Get-ChildItem $Path -Recurse -File
 
     $source = Split-Path $Path
-
+    $Destination = Resolve-Path $Destination
+    
     [long]$allbytes = ($files | measure -Sum length).Sum
     [long]$total1 = 0 # bytes done
 
