@@ -162,7 +162,7 @@ function Get-Files {
                     Write-Output $( [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($dir, '*.*', $searchOption) )
                 } else {
                     [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($dir, '*.*', $searchOption) | % {
-                        Write-Output $( [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_) | select *, @{n='Extension';e={$_.filename -replace '.*(\.\w+)$', '$1'}} )
+                        Write-Output $( [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_) | select *, @{n='Extension';e={if ($_.filename.contains('.')) {$_.filename -replace '.*(\.\w+)$', '$1'}}} )
                     }
                 }
             }
