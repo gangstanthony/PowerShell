@@ -157,11 +157,13 @@ function Get-Files {
             } else {
                 $searchOption = 'TopDirectoryOnly'
             }
-            if ($FullName) {
-                Write-Output $( [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) )
-            } else {
-                [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
-                    Write-Output $( [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_) )
+            foreach ($dir in $Path) {
+                if ($FullName) {
+                    Write-Output $( [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($dir, '*.*', $searchOption) )
+                } else {
+                    [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($dir, '*.*', $searchOption) | % {
+                        Write-Output $( [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_) )
+                    }
                 }
             }
         } elseif ($Method -eq 'EnumerateFiles') {
@@ -170,11 +172,13 @@ function Get-Files {
             } else {
                 $searchOption = 'TopDirectoryOnly'
             }
-            if ($FullName) {
-                Write-Output $( [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {$_} )
-            } else {
-                [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
-                    Write-Output $( [System.IO.FileInfo]::new($_) )
+            foreach ($dir in $Path) {
+                if ($FullName) {
+                    Write-Output $( [System.IO.Directory]::EnumerateFiles($dir, '*.*', $searchOption) | % {$_} )
+                } else {
+                    [System.IO.Directory]::EnumerateFiles($dir, '*.*', $searchOption) | % {
+                        Write-Output $( [System.IO.FileInfo]::new($_) )
+                    }
                 }
             }
         }
