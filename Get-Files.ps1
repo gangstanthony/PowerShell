@@ -55,7 +55,7 @@ function Get-Files {
             throw 'Cannot use both -Directory and -File at the same time.'
         }
 
-        $Path = Resolve-Path $Path
+        $Path = (Resolve-Path $Path).ProviderPath
 
         function CreateFolderObject {
             $name = New-Object System.Text.StringBuilder
