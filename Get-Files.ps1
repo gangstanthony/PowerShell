@@ -1,4 +1,5 @@
 # https://thesurlyadmin.com/2014/08/04/getting-directory-information-fast/
+# https://gallery.technet.microsoft.com/Get-AlphaFSChildItems-ff95f60f
 
 # check here for single file copy
 # http://serverfault.com/questions/52983/robocopy-transfer-file-and-not-folder
@@ -44,8 +45,9 @@ function Get-Files {
         [switch]$FullName,
         [switch]$Directory,
         [switch]$File,
-        [ValidateSet('Robocopy', 'Dir', 'EnumerateFiles')]
-        [string]$Method = 'Robocopy'
+        [ValidateSet('Robocopy', 'Dir', 'EnumerateFiles', 'AlphaFS')]
+        [string]$Method = 'Robocopy',
+        [string]$AlphaFSPath = (Join-Path $env:windir 'AlphaFS.dll')
     )
     
     begin {
@@ -141,6 +143,16 @@ function Get-Files {
                         }
                     }
                 }
+            }
+        } elseif ($Method -eq 'AlphaFS') {
+            ipmo $AlphaFSPath
+            if ($Recurse) {
+                $searchOption = 'AllDirectories'
+            } else {
+                $searchOption = 'TopDirectoryOnly'
+            }
+            [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
+                [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_)
             }
         } elseif ($Method -eq 'EnumerateFiles' -and $FullName) {
             if ($Recurse) {
