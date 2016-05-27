@@ -167,7 +167,7 @@ function Get-Files {
             if ($FullName) {
                 [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {$_}
             } else {
-                [System.IO.Directory]::EnumerateFiles('c:\temp') | % {
+                [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
                     [System.IO.FileInfo]::new($_)
                 }
             }
