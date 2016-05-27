@@ -80,6 +80,10 @@ function Get-Files {
             if ($Recurse) {$params += '/E'}
             if ($Include) {$params += $Include}
             foreach ($dir in $Path) {
+                # http://stackoverflow.com/questions/12027987/how-to-copy-directories-with-spaces-in-the-name
+                if ($dir.contains(' ')) {
+                    $dir = '"' + $dir + ' "'
+                }
                 foreach ($line in $(robocopy $dir NULL $params)) {
                     # folder
                     if (!$File -and $line -match '\s+\d+\s+(?<FullName>.*\\)$') {
