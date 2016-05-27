@@ -62,7 +62,11 @@ function Copy-File {
             # uses stopwatch instead of get-date to determine how long is left
             $total2 += $count
             $total1 += $count
-            $pctcomp2 = $total2 / $ffile.Length * 100
+            if ($ffile.Length -gt 1) {
+                $pctcomp2 = $total2 / $ffile.Length * 100
+            } else {
+                $pctcomp2 = 100
+            }
             [int]$secselapsed2 = [int]($sw2.elapsedmilliseconds.ToString()) / 1000
             if ($secselapsed2 -ne 0) {
                 [single]$xferrate = $total2 / $secselapsed2 / 1mb
