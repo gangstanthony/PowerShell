@@ -151,8 +151,12 @@ function Get-Files {
             } else {
                 $searchOption = 'TopDirectoryOnly'
             }
-            [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
-                [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_)
+            if ($FullName) {
+                [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption)
+            } else {
+                [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
+                    [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_)
+                }
             }
         } elseif ($Method -eq 'EnumerateFiles' -and $FullName) {
             if ($Recurse) {
