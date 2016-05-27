@@ -9,11 +9,13 @@ function Copy-File {
     )
 
     # do this regardless of whether the source is a file or a folder
+    # might be able to just use Get-ChildItem
     $files = Get-ChildItem $Path -Recurse -File
 
-    $source = Split-Path $Path
-    $Destination = Resolve-Path $Destination
-    
+    $source = (Resolve-Path (Split-Path $Path)).ProviderPath
+
+    $Destination = (Resolve-Path $Destination).ProviderPath
+
     [long]$allbytes = ($files | measure -Sum length).Sum
     [long]$total1 = 0 # bytes done
 
@@ -27,7 +29,7 @@ function Copy-File {
 
         # build destination path for this file
         $destdir = Join-Path $Destination $($(Split-Path $filefullname).Replace($source, ''))
-        
+
         # if it doesn't exist, create it
         if (!(Test-Path $destdir)) {
             $null = md $destdir
