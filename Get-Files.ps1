@@ -39,7 +39,7 @@
 
 function Get-Files {
     param (
-        [string]$Path = $PWD,
+        [string[]]$Path = $PWD,
         [string[]]$Include,
         [switch]$Recurse,
         [switch]$FullName,
@@ -63,14 +63,14 @@ function Get-Files {
             if (-not $name.ToString().EndsWith('\')) {
                 $null = $name.Append('\')
             }
-            [pscustomobject]@{
+            Write-Output $([pscustomobject]@{
                 FullName = $matches.FullName
                 DirectoryName = Split-Path $matches.FullName
                 Name = $name.ToString()
                 Size = $null
                 Extension = '[Directory]'
                 DateModified = $null
-            }
+            })
         }
     }
 
@@ -86,33 +86,33 @@ function Get-Files {
                         if ($Include) {
                             if ($matches.FullName -like "*$($include.replace('*',''))*") {
                                 if ($FullName) {
-                                    $matches.FullName
+                                    Write-Output $( $matches.FullName )
                                 } else {
-                                    CreateFolderObject
+                                    Write-Output $( CreateFolderObject )
                                 }
                             }
                         } else {
                             if ($FullName) {
-                                $matches.FullName
+                                Write-Output $( $matches.FullName )
                             } else {
-                                CreateFolderObject
+                                Write-Output $( CreateFolderObject )
                             }
                         }
 
                     # file
                     } elseif (!$Directory -and $line -match '(?<Size>\d+)\s(?<Date>\S+\s\S+)\s+(?<FullName>.*[^\\])$') {
                         if ($FullName) {
-                            $matches.FullName
+                            Write-Output $( $matches.FullName )
                         } else {
                             $name = Split-Path $matches.FullName -Leaf
-                            [pscustomobject]@{
+                            Write-Output $([pscustomobject]@{
                                 FullName = $matches.FullName
                                 DirectoryName = Split-Path $matches.FullName
                                 Name = $name
                                 Size = [int64]$matches.Size
                                 Extension = $(if ($name.IndexOf('.') -ne -1) {'.' + $name.split('.')[-1]} else {'[None]'})
                                 DateModified = $matches.Date
-                            }
+                            })
                         }
                     } else {
                         # Uncomment to see all lines that were not matched in the regex above.
@@ -126,19 +126,25 @@ function Get-Files {
             foreach ($dir in $Path) {
                 foreach ($line in $(cmd /c dir $dir $params)) {
                     switch -Regex ($line) {
-
                         # folder
                         'Directory of (?<Folder>.*)' {
-                            $lastDirName = -join ($matches.Folder, '\')
+                            $CurrentDir = $matches.Folder
+                            if (-not $CurrentDir.EndsWith('\')) {
+                                $CurrentDir = "$CurrentDir\"
+                            }
                         }
 
                         # file
                         '(?<Date>.* [ap]m) +(?<Size>.*?) (?<Name>.*)' {
-                            [pscustomobject]@{
-                                Folder = $CurrentDir
-                                Name = $Matches.Name
-                                Size = $Matches.Size
-                                LastWriteTime = [datetime]$Matches.Date
+                            if ($FullName) {
+                                Write-Output $( $CurrentDir + $matches.Name )
+                            } else {
+                                Write-Output $([pscustomobject]@{
+                                    Folder = $CurrentDir
+                                    Name = $Matches.Name
+                                    Size = $Matches.Size
+                                    LastWriteTime = [datetime]$Matches.Date
+                                })
                             }
                         }
                     }
@@ -152,10 +158,10 @@ function Get-Files {
                 $searchOption = 'TopDirectoryOnly'
             }
             if ($FullName) {
-                [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption)
+                Write-Output $( [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) )
             } else {
                 [Alphaleonis.Win32.Filesystem.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
-                    [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_)
+                    Write-Output $( [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_) )
                 }
             }
         } elseif ($Method -eq 'EnumerateFiles') {
@@ -165,10 +171,10 @@ function Get-Files {
                 $searchOption = 'TopDirectoryOnly'
             }
             if ($FullName) {
-                [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {$_}
+                Write-Output $( [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {$_} )
             } else {
                 [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {
-                    [System.IO.FileInfo]::new($_)
+                    Write-Output $( [System.IO.FileInfo]::new($_) )
                 }
             }
         }
