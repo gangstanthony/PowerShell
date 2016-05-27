@@ -167,7 +167,9 @@ function Get-Files {
             if ($FullName) {
                 [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {$_}
             } else {
-                throw 'Must use -FullName switch when using EnumerateFiles'
+                [System.IO.Directory]::EnumerateFiles('c:\temp') | % {
+                    [System.IO.FileInfo]::new($_)
+                }
             }
         }
     }
