@@ -158,14 +158,17 @@ function Get-Files {
                     [Alphaleonis.Win32.Filesystem.File]::GetFileSystemEntryInfo($_)
                 }
             }
-        } elseif ($Method -eq 'EnumerateFiles' -and $FullName) {
-            if ($Recurse) {
-                [System.IO.Directory]::EnumerateFiles($Path, '*.*', 'AllDirectories') | % {$_}
-            } else {
-                [System.IO.Directory]::EnumerateFiles($Path, '*.*') | % {$_}
-            }
         } elseif ($Method -eq 'EnumerateFiles') {
-            throw 'Must use -FullName switch when using EnumerateFiles'
+            if ($Recurse) {
+                $searchOption = 'AllDirectories'
+            } else {
+                $searchOption = 'TopDirectoryOnly'
+            }
+            if ($FullName) {
+                [System.IO.Directory]::EnumerateFiles($Path, '*.*', $searchOption) | % {$_}
+            } else {
+                throw 'Must use -FullName switch when using EnumerateFiles'
+            }
         }
     }
 }
