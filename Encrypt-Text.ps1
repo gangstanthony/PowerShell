@@ -2,13 +2,15 @@
 
 function Encrypt-Text {
     param (
-        [string]$text,
-        [validateset('SecureString', 'Base64', 'ASCII')]
-        [string]$method = 'Base64'
+        [string]$Text,
+        [validateset('SecureString', 'SecureStringWithKey', 'Base64', 'ASCII')]
+        [string]$Method = 'Base64'
     )
     
     if ($method -eq 'SecureString') {
         ConvertTo-SecureString $text -AsPlainText -Force | ConvertFrom-SecureString
+    } elseif ($method -eq 'SecureStringWithKey') {
+        ConvertTo-SecureString $text -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
     } elseif ($method -eq 'Base64') {
         [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Text))
     } elseif ($method -eq 'ASCII') {
