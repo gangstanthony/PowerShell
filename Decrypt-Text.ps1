@@ -1,3 +1,5 @@
+# http://www.powershelladmin.com/wiki/Powershell_prompt_for_password_convert_securestring_to_plain_text
+
 function Decrypt-Text {
     param (
         [string]$text,
@@ -6,7 +8,7 @@ function Decrypt-Text {
     )
 
     if ($method -eq 'SecureString') {
-        (New-Object pscredential -ArgumentList ' ', ($text | ConvertTo-SecureString -Key (1..16))).GetNetworkCredential().Password
+        (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
     } elseif ($method -eq 'Base64') {
         [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($text))
     } elseif ($method -eq 'ASCII') {
