@@ -1,6 +1,6 @@
 # http://www.powershelladmin.com/wiki/Powershell_prompt_for_password_convert_securestring_to_plain_text
 
-function Decrypt-Text {
+function Decode-Text {
     param (
         [string]$Text,
         [validateset('SecureString', 'SecureStringWithKey', 'Base64', 'ASCII')]
