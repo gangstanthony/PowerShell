@@ -2,13 +2,15 @@
 
 function Decrypt-Text {
     param (
-        [string]$text,
-        [validateset('SecureString', 'Base64', 'ASCII')]
-        [string]$method = 'Base64'
+        [string]$Text,
+        [validateset('SecureString', 'SecureStringWithKey', 'Base64', 'ASCII')]
+        [string]$Method = 'Base64'
     )
 
     if ($method -eq 'SecureString') {
         (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
+    } elseif ($method -eq 'SecureStringWithKey') {
+        (New-Object pscredential ' ', (ConvertTo-SecureString $text -Key (1..16))).GetNetworkCredential().Password
     } elseif ($method -eq 'Base64') {
         [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($text))
     } elseif ($method -eq 'ASCII') {
