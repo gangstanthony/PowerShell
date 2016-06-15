@@ -2,7 +2,9 @@ function ydl {
     param (
         [string]$song = $(get-clipboard),
         [switch]$u,
-        [string]$ydlpath = 'C:\Users\admin\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe'
+        [string]$ydlpath = 'C:\Users\anthony.stringer\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe',
+        [validateset('audio', 'video')]
+        [string]$type = 'audio'
     )
     
     if ($u) {
@@ -13,10 +15,18 @@ function ydl {
     cd c:\temp
 
     if ($song -match 'playlist') {
-        . $ydlpath -wick -o '%(autonumber)s %(title)s.%(ext)s' $song
+        if ($type -eq 'video') {
+            . $ydlpath -wick -o '%(autonumber)s %(title)s.%(ext)s' $song
+        } elseif ($type -eq 'audio') {
+            . $ydlpath --extract-audio --audio-format mp3 -wico '%(title)s.%(ext)s' -f 17 $song
+        }
     } elseif ($song -match 'youtube') {
-        . $ydlpath --extract-audio --audio-format mp3 -o '%(title)s.%(ext)s' -f 17 $song
+        if ($type -eq 'video') {
+            . $ydlpath -wick '%(title)s.%(ext)s' $song
+        } elseif ($type -eq 'audio') {
+            . $ydlpath --extract-audio --audio-format mp3 -wico '%(title)s.%(ext)s' -f 17 $song
+        }
     } elseif ($song -match 'soundcloud') {
-        . $ydlpath $song -o '%(title)s.%(ext)s'
+        . $ydlpath $song -wico '%(title)s.%(ext)s'
     }
 }
