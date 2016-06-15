@@ -2,7 +2,7 @@ function ydl {
     param (
         [string]$url = $(get-clipboard),
         [switch]$u,
-        [string]$ydlpath = 'C:\Users\anthony.stringer\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe',
+        [string]$ydlpath = 'c:\temp\youtube-dl.exe',
         [validateset('audio', 'video')]
         [string]$type = 'audio'
     )
