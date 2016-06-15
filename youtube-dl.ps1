@@ -23,13 +23,13 @@ function ydl {
     # audio only is always downloaded at lowest quality (-f 17)
     if ($url -match 'playlist') {
         if ($type -eq 'video') {
-            . $ydlpath -wick -o '%(autonumber)s %(title)s.%(ext)s' $url
+            . $ydlpath -wic -o '%(autonumber)s %(title)s.%(ext)s' $url
         } elseif ($type -eq 'audio') {
             . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f 17 $url
         }
     } elseif ($url -match 'youtube') {
         if ($type -eq 'video') {
-            . $ydlpath -wick -o '%(title)s.%(ext)s' $url
+            . $ydlpath -wic -o '%(title)s.%(ext)s' $url
         } elseif ($type -eq 'audio') {
             . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f 17 $url
         }
