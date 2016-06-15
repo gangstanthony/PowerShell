@@ -22,11 +22,11 @@ function ydl {
         }
     } elseif ($url -match 'youtube') {
         if ($type -eq 'video') {
-            . $ydlpath $url -wick -o '%(title)s.%(ext)s'
+            . $ydlpath -wick -o '%(title)s.%(ext)s' $url
         } elseif ($type -eq 'audio') {
             . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f 17 $url
         }
     } elseif ($url -match 'soundcloud') {
-        . $ydlpath $url -wic -o '%(title)s.%(ext)s'
+        . $ydlpath -wic -o '%(title)s.%(ext)s' $url
     }
 }
