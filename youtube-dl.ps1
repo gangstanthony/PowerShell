@@ -1,9 +1,11 @@
+# requires youtube-dl.exe, ffprobe.exe, and ffmpeg.exe to be in the c:\temp folder
+
 function ydl {
     param (
-        [string]$url = $(get-clipboard),
+        [string]$url = (Get-Clipboard),
         [switch]$u,
-        [string]$ydlpath = 'C:\Users\anthony.stringer\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe',
-        [validateset('audio', 'video')]
+        [string]$ydlpath = 'C:\temp\youtube-dl.exe',
+        [ValidateSet('audio', 'video')]
         [string]$type = 'audio'
     )
     
@@ -11,14 +13,19 @@ function ydl {
         start $ydlpath -ArgumentList '--update'
     }
     
-    if (!(Test-Path c:\temp)) {md c:\temp | Out-Null}
+    if (!(Test-Path c:\temp)) {
+        md c:\temp | Out-Null
+    }
+
     cd c:\temp
 
+    # video quality is auto
+    # audio only is always downloaded at lowest quality (-f 17)
     if ($url -match 'playlist') {
         if ($type -eq 'video') {
             . $ydlpath -wick -o '%(autonumber)s %(title)s.%(ext)s' $url
         } elseif ($type -eq 'audio') {
-            . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f 17 $url
+            . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f 17 $url
         }
     } elseif ($url -match 'youtube') {
         if ($type -eq 'video') {
