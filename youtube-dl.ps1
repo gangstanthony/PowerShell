@@ -19,19 +19,18 @@ function ydl {
 
     cd c:\temp
 
-    # video quality is auto
-    # audio only is always downloaded at lowest quality (-f 17)
+    # i like to save space so:
+    # video quality is 360p or best if that is not an option
+    # audio only is lowest quality (-f 17)
     if ($url -match 'playlist') {
-        if ($type -eq 'video') {
-            . $ydlpath -wic -o '%(autonumber)s %(title)s.%(ext)s' $url
-        } elseif ($type -eq 'audio') {
-            . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f 17 $url
+        switch ($type) {
+            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f '18/best' $url }
+            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f '17/worst' $url }
         }
     } elseif ($url -match 'youtube') {
-        if ($type -eq 'video') {
-            . $ydlpath -wic -o '%(title)s.%(ext)s' $url
-        } elseif ($type -eq 'audio') {
-            . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f 17 $url
+        switch ($type) {
+            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(title)s.%(ext)s' -f '18/best' $url }
+            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f '17/worst' $url }
         }
     } elseif ($url -match 'soundcloud') {
         . $ydlpath -wic -o '%(title)s.%(ext)s' $url
