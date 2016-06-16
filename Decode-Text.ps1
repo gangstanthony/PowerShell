@@ -7,14 +7,22 @@ function Decode-Text {
         [string]$Method = 'Base64'
     )
 
-    if ($method -eq 'SecureString') {
-        (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
-    } elseif ($method -eq 'SecureStringWithKey') {
-        (New-Object pscredential ' ', (ConvertTo-SecureString $text -Key (1..16))).GetNetworkCredential().Password
-    } elseif ($method -eq 'Base64') {
-        [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($text))
-    } elseif ($method -eq 'ASCII') {
-        $pwlength = $text.Length / 3 - 1
-        -join(0..$pwlength | % {[char](32 + $text.Substring(($_*3), 3))})
+    switch ($method) {
+        'SecureString' {
+            (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
+        }
+
+        'SecureStringWithKey' {
+            (New-Object pscredential ' ', (ConvertTo-SecureString $text -Key (1..16))).GetNetworkCredential().Password
+        }
+
+        'Base64' {
+            [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($text))
+        }
+
+        'ASCII' {
+            $pwlength = $text.Length / 3 - 1
+            -join(0..$pwlength | % {[char](32 + $text.Substring(($_*3), 3))})
+        }
     }
 }
