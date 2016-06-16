@@ -7,15 +7,24 @@ function Encode-Text {
         [string]$Method = 'Base64'
     )
     
-    if ($method -eq 'SecureString') {
-        ConvertTo-SecureString $text -AsPlainText -Force | ConvertFrom-SecureString
-    } elseif ($method -eq 'SecureStringWithKey') {
-        ConvertTo-SecureString $text -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-    } elseif ($method -eq 'Base64') {
-        [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Text))
-    } elseif ($method -eq 'ASCII') {
-        -join([char[]]$text | % {
-            '{0:D3}' -f ([int]$_ - 32)
-        })
+    switch ($method) {
+        'SecureString' {
+            Write-Warning "This can only be recovered by '$env:USERNAME' on computer '$env:COMPUTERNAME'"
+            ConvertTo-SecureString $text -AsPlainText -Force | ConvertFrom-SecureString
+        }
+
+        'SecureStringWithKey' {
+            ConvertTo-SecureString $text -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+        }
+
+        'Base64' {
+            [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Text))
+        }
+
+        'ASCII' {
+            -join([char[]]$text | % {
+                '{0:D3}' -f ([int]$_ - 32)
+            })
+        }
     }
 }
