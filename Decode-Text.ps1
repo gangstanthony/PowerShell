@@ -10,6 +10,8 @@ function Decode-Text {
     switch ($method) {
         'SecureString' {
             (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
+            #$marshal = [Runtime.InteropServices.Marshal] 
+            #$marshal::PtrToStringAuto( $marshal::SecureStringToBSTR(($text | convertto-securestring)) ) 
         }
 
         'SecureStringWithKey' {
