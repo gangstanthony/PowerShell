@@ -202,9 +202,10 @@ function wimi {
 <#
 ((iwr http://www.realip.info/api/p/realip.php).content | ConvertFrom-Json).IP
 ((iwr https://api.ipify.org/?format=json).content | ConvertFrom-Json).IP
+(iwr http://ipv4bot.whatismyipaddress.com/).content
 (iwr http://icanhazip.com/).content.trim()
-(iwr http://checkip.dyndns.org/).content -replace '[^\d.]+' # takes a long time
 (iwr http://ifconfig.me/ip).content.trim() # takes a long time
+(iwr http://checkip.dyndns.org/).content -replace '[^\d.]+' # takes a long time
 #>
 
 function java {
