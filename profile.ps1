@@ -194,9 +194,18 @@ function lunch {
     MessageBox clock in
 }
 
+# http://stackoverflow.com/questions/3097589/getting-my-public-ip-via-api
+# https://www.reddit.com/r/PowerShell/comments/4parze/formattable_help/
 function wimi {
-    (iwr http://www.realip.info/api/p/realip.php).RawContent.split("`n")[-1] -replace '[^0-9.]'
+    ((iwr http://www.realip.info/api/p/realip.php).content | ConvertFrom-Json).IP
 }
+<#
+((iwr http://www.realip.info/api/p/realip.php).content | ConvertFrom-Json).IP
+((iwr https://api.ipify.org/?format=json).content | ConvertFrom-Json).IP
+(iwr http://icanhazip.com/).content.trim()
+(iwr http://checkip.dyndns.org/).content -replace '[^\d.]+' # takes a long time
+(iwr http://ifconfig.me/ip).content.trim() # takes a long time
+#>
 
 function java {
     param (
