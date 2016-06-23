@@ -128,7 +128,7 @@ function Out-Menu {
     do { 
         $prompt = New-Object System.Text.StringBuilder 
         switch ($true) { 
-            {-not [string]::IsNullOrEmpty($Header)} { $null = $prompt.Append($Header); break } 
+            {[bool]$Header -and $Header -notmatch '^(?:\s+)?'} { $null = $prompt.Append($Header); break }
             $true { $null = $prompt.Append('Choose an option') } 
             $AllowCancel { $null = $prompt.Append(', or enter "c" to cancel.') } 
             $AllowMultiple {$null = $prompt.Append("`nTo select multiple, enter numbers separated by a comma EX: 1, 2") } 
