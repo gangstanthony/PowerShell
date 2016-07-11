@@ -1,3 +1,6 @@
+# https://github.com/RamblingCookieMonster/PowerShell/blob/master/Get-ADSIObject.ps1
+# http://www.ldapexplorer.com/en/manual/109010000-ldap-filter-syntax.htm
+
 # alternate credentials
 # https://www.reddit.com/r/PowerShell/comments/40zmmf/converting_a_vb_script_to_powershellabsolutely/
 
