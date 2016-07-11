@@ -111,12 +111,6 @@ function Check-Header {
         # Validate file header
         # might change .startswith() to -match.
         # might remove 'select -f 1' to get all possible matching extensions, or just somehow make it a better match.
-        $known | ? {$_.header.startswith($HeaderAsHexString.ToString())} | select -f 1 | % {
-            [pscustomobject]@{
-                File = $path
-                CurrentExt = (gi $path).Extension
-                RealExt = $_.extension
-            }
-        }
+        $known | ? {$_.header.startswith($HeaderAsHexString.ToString())} | select -f 1 | % {$_.extension}
     } catch {}
 }
