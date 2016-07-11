@@ -4,7 +4,8 @@
 
 function Get-Header {
     param (
-        $path
+        [string]$path,
+        [int]$bits = 4
     )
     
     $path = Resolve-FullPath $path
@@ -12,7 +13,7 @@ function Get-Header {
     try {
         # Get content of each file (up to 4 bytes) for analysis
         $HeaderAsHexString = New-Object System.Text.StringBuilder
-        [Byte[]](Get-Content -Path $path -TotalCount 4 -Encoding Byte -ea Stop) | % {
+        [Byte[]](Get-Content -Path $path -TotalCount $bits -Encoding Byte -ea Stop) | % {
             if (("{0:X}" -f $_).length -eq 1) {
                 $null = $HeaderAsHexString.Append('0{0:X}' -f $_)
             } else {
