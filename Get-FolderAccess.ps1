@@ -81,8 +81,7 @@ function Get-FolderACL ([string]$Folder, [string]$Filter) {
           $dn = $(([adsisearcher]"samaccountname=$($_.UserAccount)").FindOne().Path.Substring(7))
           Get-Member $dn |
             Where-Object {
-              $_ -notmatch '-\d{10}-' -and
-              $_ -notmatch '-svc-' ########################
+              $_ -notmatch '-\d{10}-'
             } |
             ForEach-Object {
               #* $IdentityReference = ([adsi]"LDAP://$obj").samaccountname
