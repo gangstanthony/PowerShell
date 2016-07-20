@@ -513,7 +513,7 @@ function SIDtoName ([string]$SID) {
         # calculate current folder depth
         $matches = (([regex]'\\').matches($file.substring($Path.length, $file.length - $Path.length))).count
 
-        $myobj = New-Object psobject -Property@{
+        $myobj = New-Object psobject -Property @{
             Folder = $file
             ACL = ''
             Level = $matches - 1
