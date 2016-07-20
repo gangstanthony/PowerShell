@@ -120,72 +120,110 @@ $report = "$saveDir\$saveName.html"
 
 #region Function definitions
 function drawDirectory ($directory, $domain) {
-    #$domain = $env:USERDOMAIN
     $dirHTML = '
         <div class="'
-            if ($directory.level -eq 0) { $dirHTML += 'he0_expanded' } else { $dirHTML += 'he' + $directory.level }
-            $dirHTML += '"><span class="sectionTitle" tabindex="0">Folder ' + $directory.Folder + '</span></div>
-                        <div class="container">
-                        <div class="he4i">
-                                <div class="heACL">
-                                        <table class="info3" cellpadding="0" cellspacing="0">
-                                                <thead>
-                                                        <th scope="col"><b>Owner</b></th>
-                                                </thead>
-                                                <tbody>'
-            foreach ($itemACL in $directory.ACL) {
-                    $acls = $null
-                    if ($itemACL.AccessToString -ne $null) {
-                        # select -u because duplicates if inherited and not
-                        $acls = $itemACL.AccessToString.split("`n") | select -Unique | ? {$_ -notmatch '  -\d{9}$'} | sort
-                    }
-                    $dirHTML += '<tr><td>' + $itemACL.Owner + '</td></tr>
-                        <tr>
-                        <td>
-                        <table>
-                                <thead>
-                                        <th>User</th>
-                                        <th>Control</th>
-                                        <th>Privilege</th>
-                                </thead>
-                                <tbody>'
-                    foreach ($acl in $acls) {
-                            #$temp = [regex]::split($acl, '(?<!(,|NT))\s+')
-                            $temp = [regex]::split($acl, '\s+(?=Allow|Deny)|(?<=Allow|Deny)\s+')  
-                            if ($debug) {
-                                write-host "ACL(" $temp.gettype().name ")[" $temp.length "]: " $temp
-                            }
-                            if ($temp.count -eq 1) {
-                                continue
-                            }
-                            ############
-                            if ($temp[0] -match "^$domain\\") {
-                                if ((([adsi]([adsisearcher]"samaccountname=$($temp[0] -replace "^$domain\\")").findone().path).useraccountcontrol[0] -band 2) -ne 0) {
-                                    # account is disabled
-                                    $temp[0] += ' - DISABLED'
-                                }
-                            }
-                            ############
-                            if (!$ShowAllAccounts) {
-                                if ( Invoke-Expression $comparison ) {
-                                    $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
-                                }
-                            } else {
-                                $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
-                            }
-                    }
-                    $dirHTML += '</tbody>
-                                                </table>
-                                                </td>
-                                                </tr>'
+
+    if ($directory.level -eq 0) {
+        $dirHTML += 'he0_expanded'
+    } else {
+        $dirHTML += 'he' + $directory.level
+    }
+
+    $dirHTML += '"><span class="sectionTitle" tabindex="0">Folder ' + $directory.Folder + '</span></div>
+        <div class="container">
+        <div class="he4i">
+        <div class="heACL">
+        <table class="info3" cellpadding="0" cellspacing="0">
+        <thead>
+        <th scope="col"><b>Owner</b></th>
+        </thead>
+        <tbody>'
+
+    $acls = $null
+
+    if ($itemACL.AccessToString -ne $null) {
+        # select -u because duplicates if inherited and not
+        $acls = $itemACL.AccessToString.split("`n") | select -Unique | ? {$_ -notmatch '  -\d{9}$'} | sort
+    }
+
+    $dirHTML += '<tr><td>' + $itemACL.Owner + '</td></tr>
+        <tr>
+        <td>
+        <table>
+        <thead>
+        <th>User</th>
+        <th>Control</th>
+        <th>Privilege</th>
+        </thead>
+        <tbody>'
+
+    
+    $index = 0
+    $total = $acls.Count
+    $starttime = $lasttime = Get-Date
+    foreach ($acl in $acls) {
+        #$temp = [regex]::split($acl, '(?<!(,|NT))\s+')
+        $temp = [regex]::split($acl, '\s+(?=Allow|Deny)|(?<=Allow|Deny)\s+')  
+
+        if ($debug) {
+            Write-Host "ACL(" $temp.gettype().name ")[" $temp.length "]: " $temp
+        }
+
+        if ($temp.count -eq 1) {
+            continue
+        }
+
+        $index++
+        $currtime = (Get-Date) - $starttime
+        $avg = $currtime.TotalSeconds / $index
+        $last = ((Get-Date) - $lasttime).TotalSeconds
+        $left = $total - $index
+        $WrPrgParam = @{
+            Activity = (
+                "<name-of-operation> $(Get-Date -f s)",
+                "Total: $($currtime -replace '\..*')",
+                "Avg: $('{0:N2}' -f $avg)",
+                "Last: $('{0:N2}' -f $last)",
+                "ETA: $('{0:N2}' -f ($avg * $left / 60))",
+                "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
+            ) -join ' '
+            Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
+            CurrentOperation = "USER: $($temp[0])"
+            PercentComplete = $index / $total * 100
+            id = 2
+        }
+        Write-Progress @WrPrgParam
+        $lasttime = Get-Date
+
+        if ($temp[0] -match "^$domain\\") {
+            if ((([adsi]([adsisearcher]"samaccountname=$($temp[0] -replace "^$domain\\")").findone().path).useraccountcontrol[0] -band 2) -ne 0) {
+                # account is disabled
+                $temp[0] += ' - DISABLED'
             }
-$dirHTML += '
-                                                </tbody>
-                                        </table>
-                                </div>
-                        </div>
-                        <div class="filler"></div>
-                        </div>'
+        }
+
+        if (!$ShowAllAccounts) {
+            if ( Invoke-Expression $comparison ) {
+                $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
+            }
+        } else {
+            $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
+        }
+    }
+
+    $dirHTML += '</tbody>
+        </table>
+        </td>
+        </tr>'
+
+    $dirHTML += '
+        </tbody>
+        </table>
+        </div>
+        </div>
+        <div class="filler"></div>
+        </div>'
+
     return $dirHTML
 }
 #endregion
@@ -197,102 +235,117 @@ $dirHTML += '
 <title>Access Control List for $Path</title>
 <!-- Styles -->
 <style type="text/css">
-                body    { background-color:#FFFFFF; border:1px solid #666666; color:#000000; font-size:68%; font-family:MS Shell Dlg; margin:0,0,10px,0; word-break:normal; word-wrap:break-word; }
-                table   { font-size:100%; table-layout:fixed; width:100%; }
-                td,th   { overflow:visible; text-align:left; vertical-align:top; white-space:normal; }
-                .title  { background:#FFFFFF; border:none; color:#333333; display:block; height:24px; margin:0px,0px,-1px,0px; padding-top:4px; position:relative; table-layout:fixed; width:100%; z-index:5; }
-                .he0_expanded    { background-color:#FEF7D6; border:1px solid #BBBBBB; color:#3333CC; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:0px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he1_expanded    { background-color:#A0BACB; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:20px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he1h_expanded   { background-color: #7197B3; border: 1px solid #BBBBBB; color: #000000; cursor: hand; display: block; font-family: MS Shell Dlg; font-size: 100%; font-weight: bold; height: 2.25em; margin-bottom: -1px; margin-left: 10px; margin-right: 0px; padding-left: 8px; padding-right: 5em; padding-top: 4px; position: relative; width: 100%; }
-                .he1    { background-color:#A0BACB; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:20px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he2    { background-color:#C0D2DE; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:30px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he3    { background-color:#D9E3EA; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:40px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he4    { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:50px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he4h   { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:55px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he4i   { background-color:#F9F9F9; border:1px solid #BBBBBB; color:#000000; display:block; font-family:MS Shell Dlg; font-size:100%; margin-bottom:-1px; margin-left:30px; margin-right:0px; padding-bottom:5px; padding-left:21px; padding-top:4px; position:relative; width:100%; }
-                .he5    { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:60px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
-                .he5h   { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; padding-left:11px; padding-right:5em; padding-top:4px; margin-bottom:-1px; margin-left:65px; margin-right:0px; position:relative; width:100%; }
-                .he5i   { background-color:#F9F9F9; border:1px solid #BBBBBB; color:#000000; display:block; font-family:MS Shell Dlg; font-size:100%; margin-bottom:-1px; margin-left:65px; margin-right:0px; padding-left:21px; padding-bottom:5px; padding-top: 4px; position:relative; width:100%; }
-                DIV .expando { color:#000000; text-decoration:none; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:normal; position:absolute; right:10px; text-decoration:underline; z-index: 0; }
-                .he0 .expando { font-size:100%; }
-                .info, .info3, .info4, .disalign  { line-height:1.6em; padding:0px,0px,0px,0px; margin:0px,0px,0px,0px; }
-                .disalign TD                      { padding-bottom:5px; padding-right:10px; }
-                .info TD                          { padding-right:10px; width:50%; }
-                .info3 TD                         { padding-right:10px; width:33%; }
-                .info4 TD, .info4 TH              { padding-right:10px; width:25%; }
-                .info TH, .info3 TH, .info4 TH, .disalign TH { border-bottom:1px solid #CCCCCC; padding-right:10px; }
-                .subtable, .subtable3             { border:1px solid #CCCCCC; margin-left:0px; background:#FFFFFF; margin-bottom:10px; }
-                .subtable TD, .subtable3 TD       { padding-left:10px; padding-right:5px; padding-top:3px; padding-bottom:3px; line-height:1.1em; width:10%; }
-                .subtable TH, .subtable3 TH       { border-bottom:1px solid #CCCCCC; font-weight:normal; padding-left:10px; line-height:1.6em;  }
-                .subtable .footnote               { border-top:1px solid #CCCCCC; }
-                .subtable3 .footnote, .subtable .footnote { border-top:1px solid #CCCCCC; }
-                .subtable_frame     { background:#D9E3EA; border:1px solid #CCCCCC; margin-bottom:10px; margin-left:15px; }
-                .subtable_frame TD  { line-height:1.1em; padding-bottom:3px; padding-left:10px; padding-right:15px; padding-top:3px; }
-                .subtable_frame TH  { border-bottom:1px solid #CCCCCC; font-weight:normal; padding-left:10px; line-height:1.6em; }
-                .subtableInnerHead { border-bottom:1px solid #CCCCCC; border-top:1px solid #CCCCCC; }
-                .explainlink            { color:#000000; text-decoration:none; cursor:hand; }
-                .explainlink:hover      { color:#0000FF; text-decoration:underline; }
-                .spacer { background:transparent; border:1px solid #BBBBBB; color:#FFFFFF; display:block; font-family:MS Shell Dlg; font-size:100%; height:10px; margin-bottom:-1px; margin-left:43px; margin-right:0px; padding-top: 4px; position:relative; }
-                .filler { background:transparent; border:none; color:#FFFFFF; display:block; font:100% MS Shell Dlg; line-height:8px; margin-bottom:-1px; margin-left:53px; margin-right:0px; padding-top:4px; position:relative; }
-                .container { display:block; position:relative; }
-                .rsopheader { background-color:#A0BACB; border-bottom:1px solid black; color:#333333; font-family:MS Shell Dlg; font-size:130%; font-weight:bold; padding-bottom:5px; text-align:center; }
-                .rsopname { color:#333333; font-family:MS Shell Dlg; font-size:130%; font-weight:bold; padding-left:11px; }
-                .gponame{ color:#333333; font-family:MS Shell Dlg; font-size:130%; font-weight:bold; padding-left:11px; }
-                .gpotype{ color:#333333; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; padding-left:11px; }
-                #uri    { color:#333333; font-family:MS Shell Dlg; font-size:100%; padding-left:11px; }
-                #dtstamp{ color:#333333; font-family:MS Shell Dlg; font-size:100%; padding-left:11px; text-align:left; width:30%; }
-                #objshowhide { color:#000000; cursor:hand; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; margin-right:0px; padding-right:10px; text-align:right; text-decoration:underline; z-index:2; word-wrap:normal; }
-                #gposummary { display:block; }
-                #gpoinformation { display:block; }
-                @media print {
-                    #objshowhide{ display:none; }
-                    body    { color:#000000; border:1px solid #000000; }
-                    .title  { color:#000000; border:1px solid #000000; }
-                    .he0_expanded    { color:#000000; border:1px solid #000000; }
-                    .he1h_expanded   { color:#000000; border:1px solid #000000; }
-                    .he1_expanded    { color:#000000; border:1px solid #000000; }
-                    .he1    { color:#000000; border:1px solid #000000; }
-                    .he2    { color:#000000; background:#EEEEEE; border:1px solid #000000; }
-                    .he3    { color:#000000; border:1px solid #000000; }
-                    .he4    { color:#000000; border:1px solid #000000; }
-                    .he4h   { color:#000000; border:1px solid #000000; }
-                    .he4i   { color:#000000; border:1px solid #000000; }
-                    .he5    { color:#000000; border:1px solid #000000; }
-                    .he5h   { color:#000000; border:1px solid #000000; }
-                    .he5i   { color:#000000; border:1px solid #000000; }
-                    }
-                    v\:* {behavior:url(#default#VML);}
+    body    { background-color:#FFFFFF; border:1px solid #666666; color:#000000; font-size:68%; font-family:MS Shell Dlg; margin:0,0,10px,0; word-break:normal; word-wrap:break-word; }
+    table   { font-size:100%; table-layout:fixed; width:100%; }
+    td,th   { overflow:visible; text-align:left; vertical-align:top; white-space:normal; }
+    .title  { background:#FFFFFF; border:none; color:#333333; display:block; height:24px; margin:0px,0px,-1px,0px; padding-top:4px; position:relative; table-layout:fixed; width:100%; z-index:5; }
+    .he0_expanded    { background-color:#FEF7D6; border:1px solid #BBBBBB; color:#3333CC; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:0px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he1_expanded    { background-color:#A0BACB; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:20px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he1h_expanded   { background-color: #7197B3; border: 1px solid #BBBBBB; color: #000000; cursor: hand; display: block; font-family: MS Shell Dlg; font-size: 100%; font-weight: bold; height: 2.25em; margin-bottom: -1px; margin-left: 10px; margin-right: 0px; padding-left: 8px; padding-right: 5em; padding-top: 4px; position: relative; width: 100%; }
+    .he1    { background-color:#A0BACB; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:20px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he2    { background-color:#C0D2DE; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:30px; margin-right:0px; padding-left:8px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he3    { background-color:#D9E3EA; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:40px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he4    { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:50px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he4h   { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:55px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he4i   { background-color:#F9F9F9; border:1px solid #BBBBBB; color:#000000; display:block; font-family:MS Shell Dlg; font-size:100%; margin-bottom:-1px; margin-left:30px; margin-right:0px; padding-bottom:5px; padding-left:21px; padding-top:4px; position:relative; width:100%; }
+    .he5    { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; height:2.25em; margin-bottom:-1px; margin-left:60px; margin-right:0px; padding-left:11px; padding-right:5em; padding-top:4px; position:relative; width:100%; }
+    .he5h   { background-color:#E8E8E8; border:1px solid #BBBBBB; color:#000000; cursor:hand; display:block; font-family:MS Shell Dlg; font-size:100%; padding-left:11px; padding-right:5em; padding-top:4px; margin-bottom:-1px; margin-left:65px; margin-right:0px; position:relative; width:100%; }
+    .he5i   { background-color:#F9F9F9; border:1px solid #BBBBBB; color:#000000; display:block; font-family:MS Shell Dlg; font-size:100%; margin-bottom:-1px; margin-left:65px; margin-right:0px; padding-left:21px; padding-bottom:5px; padding-top: 4px; position:relative; width:100%; }
+    DIV .expando { color:#000000; text-decoration:none; display:block; font-family:MS Shell Dlg; font-size:100%; font-weight:normal; position:absolute; right:10px; text-decoration:underline; z-index: 0; }
+    .he0 .expando { font-size:100%; }
+    .info, .info3, .info4, .disalign  { line-height:1.6em; padding:0px,0px,0px,0px; margin:0px,0px,0px,0px; }
+    .disalign TD                      { padding-bottom:5px; padding-right:10px; }
+    .info TD                          { padding-right:10px; width:50%; }
+    .info3 TD                         { padding-right:10px; width:33%; }
+    .info4 TD, .info4 TH              { padding-right:10px; width:25%; }
+    .info TH, .info3 TH, .info4 TH, .disalign TH { border-bottom:1px solid #CCCCCC; padding-right:10px; }
+    .subtable, .subtable3             { border:1px solid #CCCCCC; margin-left:0px; background:#FFFFFF; margin-bottom:10px; }
+    .subtable TD, .subtable3 TD       { padding-left:10px; padding-right:5px; padding-top:3px; padding-bottom:3px; line-height:1.1em; width:10%; }
+    .subtable TH, .subtable3 TH       { border-bottom:1px solid #CCCCCC; font-weight:normal; padding-left:10px; line-height:1.6em;  }
+    .subtable .footnote               { border-top:1px solid #CCCCCC; }
+    .subtable3 .footnote, .subtable .footnote { border-top:1px solid #CCCCCC; }
+    .subtable_frame     { background:#D9E3EA; border:1px solid #CCCCCC; margin-bottom:10px; margin-left:15px; }
+    .subtable_frame TD  { line-height:1.1em; padding-bottom:3px; padding-left:10px; padding-right:15px; padding-top:3px; }
+    .subtable_frame TH  { border-bottom:1px solid #CCCCCC; font-weight:normal; padding-left:10px; line-height:1.6em; }
+    .subtableInnerHead { border-bottom:1px solid #CCCCCC; border-top:1px solid #CCCCCC; }
+    .explainlink            { color:#000000; text-decoration:none; cursor:hand; }
+    .explainlink:hover      { color:#0000FF; text-decoration:underline; }
+    .spacer { background:transparent; border:1px solid #BBBBBB; color:#FFFFFF; display:block; font-family:MS Shell Dlg; font-size:100%; height:10px; margin-bottom:-1px; margin-left:43px; margin-right:0px; padding-top: 4px; position:relative; }
+    .filler { background:transparent; border:none; color:#FFFFFF; display:block; font:100% MS Shell Dlg; line-height:8px; margin-bottom:-1px; margin-left:53px; margin-right:0px; padding-top:4px; position:relative; }
+    .container { display:block; position:relative; }
+    .rsopheader { background-color:#A0BACB; border-bottom:1px solid black; color:#333333; font-family:MS Shell Dlg; font-size:130%; font-weight:bold; padding-bottom:5px; text-align:center; }
+    .rsopname { color:#333333; font-family:MS Shell Dlg; font-size:130%; font-weight:bold; padding-left:11px; }
+    .gponame{ color:#333333; font-family:MS Shell Dlg; font-size:130%; font-weight:bold; padding-left:11px; }
+    .gpotype{ color:#333333; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; padding-left:11px; }
+    #uri    { color:#333333; font-family:MS Shell Dlg; font-size:100%; padding-left:11px; }
+    #dtstamp{ color:#333333; font-family:MS Shell Dlg; font-size:100%; padding-left:11px; text-align:left; width:30%; }
+    #objshowhide { color:#000000; cursor:hand; font-family:MS Shell Dlg; font-size:100%; font-weight:bold; margin-right:0px; padding-right:10px; text-align:right; text-decoration:underline; z-index:2; word-wrap:normal; }
+    #gposummary { display:block; }
+    #gpoinformation { display:block; }
+    @media print {
+        #objshowhide{ display:none; }
+        body    { color:#000000; border:1px solid #000000; }
+        .title  { color:#000000; border:1px solid #000000; }
+        .he0_expanded    { color:#000000; border:1px solid #000000; }
+        .he1h_expanded   { color:#000000; border:1px solid #000000; }
+        .he1_expanded    { color:#000000; border:1px solid #000000; }
+        .he1    { color:#000000; border:1px solid #000000; }
+        .he2    { color:#000000; background:#EEEEEE; border:1px solid #000000; }
+        .he3    { color:#000000; border:1px solid #000000; }
+        .he4    { color:#000000; border:1px solid #000000; }
+        .he4h   { color:#000000; border:1px solid #000000; }
+        .he4i   { color:#000000; border:1px solid #000000; }
+        .he5    { color:#000000; border:1px solid #000000; }
+        .he5h   { color:#000000; border:1px solid #000000; }
+        .he5i   { color:#000000; border:1px solid #000000; }
+        }
+        v\:* {behavior:url(#default#VML);}
 </style>
 </head>
 <body>
 <table class="title" cellpadding="0" cellspacing="0">
 <tr><td colspan="2" class="gponame">Access Control List for $Path</td></tr>
 <tr>
-   <td id="dtstamp">Data obtained on: $(Get-Date)</td>
-   <td><div id="objshowhide" tabindex="0"></div></td>
+<td id="dtstamp">Data obtained on: $(Get-Date)</td>
+<td><div id="objshowhide" tabindex="0"></div></td>
 </tr>
 </table>
 <div class="filler"></div>
 "@ | Set-Content $report
 #endregion
 #region Setting up the report
-        '<div class="gposummary">' | Add-Content $report
-
-        #if ($colACLs.count) {
-        #    $count = $colACLs.count
-        #} else {
-        #    $count = 1
-        #}
-
-        foreach ($acl in $colACLs) {
-            drawDirectory -directory $acl -domain $Domain | Add-Content $report
+    '<div class="gposummary">' | Add-Content $report
+    
+    $index = 0
+    $total = $colACLs.Count
+    $starttime = $lasttime = Get-Date
+    foreach ($acl in $colACLs) {
+        $index++
+        $currtime = (Get-Date) - $starttime
+        $avg = $currtime.TotalSeconds / $index
+        $last = ((Get-Date) - $lasttime).TotalSeconds
+        $left = $total - $index
+        $WrPrgParam = @{
+            Activity = (
+                "acltohtml $(Get-Date -f s)",
+                "Total: $($currtime -replace '\..*')",
+                "Avg: $('{0:N2}' -f $avg)",
+                "Last: $('{0:N2}' -f $last)",
+                "ETA: $('{0:N2}' -f ($avg * $left / 60))",
+                "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
+            ) -join ' '
+            Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
+            CurrentOperation = "FOLDER: $acl"
+            PercentComplete = $index / $total * 100
+            id = 1
         }
+        Write-Progress @WrPrgParam
+        $lasttime = Get-Date
 
-        #for ($i = 0; $i -lt $count; $i++) {
-        #    drawDirectory ([ref]$colACLs[$i]) | Add-Content $report
-        #}
+        drawDirectory -directory $acl -domain $Domain | Add-Content $report
+    }
 
-        '</div></body></html>' | Add-Content $report
+    '</div></body></html>' | Add-Content $report
 #endregion
     if (!$DontOpen) {
         . $report
