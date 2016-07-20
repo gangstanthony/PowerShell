@@ -393,7 +393,7 @@ function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain) {
                 "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
             ) -join ' '
             Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
-            CurrentOperation = "FOLDER: $directory"
+            CurrentOperation = "FOLDER: $($directory.folder)"
             PercentComplete = $index / $total * 100
             id = 1
         }
