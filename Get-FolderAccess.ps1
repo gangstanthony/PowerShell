@@ -110,7 +110,7 @@ function Get-Member ($GroupName) {
     $users | select -Unique
 }
 
-function acltohtml ($Path, $colACLs, $ShowAllAccounts, $Domain) {
+function acltohtml ($Path, $colACLs, $ShowAllAccounts, $Domain, $Comparison) {
 $saveDir = "$env:TEMP\Network Access"
 if (!(Test-Path $saveDir)) {mkdir "$saveDir\Logs" | Out-Null}
 $time = Get-Date -Format 'yyyyMMddHHmmss'
@@ -119,7 +119,7 @@ $report = "$saveDir\$saveName.html"
 '' > $report
 
 #region Function definitions
-function drawDirectory ($directory, $domain) {
+function drawDirectory ($directory, $domain, $Comparison) {
     $dirHTML = '
         <div class="'
 
@@ -141,6 +141,7 @@ function drawDirectory ($directory, $domain) {
 
     $acls = $null
 
+    $itemACL = $directory.ACL
     if ($itemACL.AccessToString -ne $null) {
         # select -u because duplicates if inherited and not
         $acls = $itemACL.AccessToString.split("`n") | select -Unique | ? {$_ -notmatch '  -\d{9}$'} | sort
@@ -180,7 +181,7 @@ function drawDirectory ($directory, $domain) {
         $left = $total - $index
         $WrPrgParam = @{
             Activity = (
-                "<name-of-operation> $(Get-Date -f s)",
+                "Check if account is disabled $(Get-Date -f s)",
                 "Total: $($currtime -replace '\..*')",
                 "Avg: $('{0:N2}' -f $avg)",
                 "Last: $('{0:N2}' -f $last)",
@@ -335,14 +336,14 @@ function drawDirectory ($directory, $domain) {
                 "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
             ) -join ' '
             Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
-            CurrentOperation = "FOLDER: $acl"
+            CurrentOperation = "FOLDER: $($acl.folder)"
             PercentComplete = $index / $total * 100
             id = 1
         }
         Write-Progress @WrPrgParam
         $lasttime = Get-Date
 
-        drawDirectory -directory $acl -domain $Domain | Add-Content $report
+        drawDirectory -directory $acl -domain $Domain -Comparison $Comparison | Add-Content $report
     }
 
     '</div></body></html>' | Add-Content $report
@@ -354,7 +355,7 @@ function drawDirectory ($directory, $domain) {
     $report
 }
 
-function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain) {
+function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain, $Comparison) {
     $index = 0
     $total = $colACLs.Count
     $starttime = $lasttime = Get-Date
@@ -430,7 +431,7 @@ function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain) {
             }
 
             if (!$ShowAllAccounts) {
-                if ( Invoke-Expression $comparison ) {
+                if ( Invoke-Expression $Comparison ) {
                     New-Object psobject -Property @{
                         Folder = $directory.Folder
                         Name   = $temp[0]
@@ -509,8 +510,8 @@ function SIDtoName ([string]$SID) {
         $ShowAllAccounts = $true
     }
 
-    $comparison = '($acl -match "^$domain\\" -and $acl -notlike "*administrator*" -and $acl -notlike "*BUILTIN*" -and $acl -notlike "*NT AUTHORITY*" -and $acl -notlike "CREATOR*" -and $acl -notlike "S*" -and $acl -notlike "*\MAM-*" -and $acl -notmatch "\w{2}-\w{3}\d-\w{3}")'
-    
+    $comparison = '$temp[0] -match "^$domain\\" -and $temp[0] -notlike "*administrator*" -and $temp[0] -notlike "*BUILTIN*" -and $temp[0] -notlike "*NT AUTHORITY*" -and $temp[0] -notlike "CREATOR*" -and $temp[0] -notlike "S*" -and $temp[0] -notlike "*\MAM-*" -and $temp[0] -notmatch "\w{2}-\w{3}\d-\w{3}" -and $temp[0] -notmatch "\\a-" -and $temp[0] -notmatch "\\-svc-"'
+
     $colFiles = New-Object System.Collections.ArrayList
 
     if ($Depth -eq 0) {
@@ -593,8 +594,8 @@ function SIDtoName ([string]$SID) {
 
     # begin do stuff with all those acls...
     switch ($ReportFormat) {
-        'Console' {acltovariable -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain}
-        'HTML'    {acltohtml -Path $Path -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain}
+        'Console' {acltovariable -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain -Comparison $comparison}
+        'HTML'    {acltohtml -Path $Path -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain -Comparison $comparison}
         'Excel'   {acltoexcel -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts}
     }
 }
