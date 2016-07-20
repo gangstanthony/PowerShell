@@ -119,7 +119,8 @@ $report = "$saveDir\$saveName.html"
 '' > $report
 
 #region Function definitions
-function drawDirectory([ref] $directory, $Domain) {
+function drawDirectory([ref]$directory) {
+    $domain = $env:USERDOMAIN
     $dirHTML = '
         <div class="'
             if ($directory.value.level -eq 0) { $dirHTML += 'he0_expanded' } else { $dirHTML += 'he' + $directory.value.level }
@@ -282,7 +283,7 @@ $dirHTML += '
             $count = 1
         }
         for ($i = 0; $i -lt $count; $i++) {
-                drawDirectory ([ref] $colACLs[$i], $Domain) | Add-Content $report
+                drawDirectory ([ref]$colACLs[$i]) | Add-Content $report
         }
         '</div></body></html>' | Add-Content $report
 #endregion
