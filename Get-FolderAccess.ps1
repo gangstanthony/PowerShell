@@ -34,21 +34,32 @@ function Get-FolderAccess {
         [switch]$ShowAllAccounts = $false,
         [switch]$DontOpen = $false,
         [ValidateSet('Console','HTML','Excel')]
-        $ReportFormat = 'Console',
-        [string]$Rights
+        $ReportFormat = 'Console'
     )
 
 function Get-FolderACL ([string]$Path, [string]$Domain) {
-
+    
     $CurrentACL = Get-Acl -Path $Path
+    # can't use this because we need the owner?
+    #$thisacl = Get-Acl -Path $Path
+    #$CurrentACL = New-Object System.Security.AccessControl.DirectorySecurity
+    #$CurrentACL.SetOwner([System.Security.Principal.NTAccount]$thisacl.Owner)
+
     # could make hashtable of all current identities and exclude those from the output
     # or just filter out what i don't want (builtin, nt authority, etc...)
     #$CurrentACL.Access | % {$CurrentACL.RemoveAccessRule($_) | Out-Null} # does absolutely nothing???
+
     $root = Split-Path $Path -Leaf
 #!#
 #Write-Host "Folder: $root"
 #!#
-    (Get-Acl -Path $Path).Access |
+
+    # if you get access denied, skip the folder
+    if (!$CurrentACL) {
+        continue
+    }
+
+    $CurrentACL.Access |
         ForEach-Object {
             # remove the domain\ in the name
             $UserAccount = $_.IdentityReference.ToString().Substring($_.IdentityReference.ToString().IndexOf('\') + 1)
@@ -60,48 +71,54 @@ function Get-FolderACL ([string]$Path, [string]$Domain) {
             
             # if ((([adsi]"LDAP://$_").userAccountControl[0] -band 2) -ne 0) {account is disabled}
 
-            if ($IdentityReference -notmatch "^$domain\\") {
+            # if we're not interested in all the accounts, we may as well save time by not enumerating the admins groups for every single folder
+            if (!$ShowAllAccounts -and $UserAccount -match '(domain )?administrators') {
+                $CurrentACL.AddAccessRule($_)
+            } else {
                 try {
                     $dn = ([adsisearcher]"samaccountname=$($UserAccount)").FindOne().Path.Substring(7)
                 } catch {
                     $dn = $null
                 }
                 Get-Member $dn |
+                    Where-Object { # filter out any ForeignSecurityPrincipals
+                        $_ -notmatch 'S-\d-\d-\d{2}-(\d{10}-){2}\d{9}-\d{5}'
+                    } |
                     ForEach-Object {
-                        $IdentityReference = ([adsi]"LDAP://$_").samaccountname
+                        $IdentityReference = ([adsi]"LDAP://$_").samaccountname.ToString()
                         $CurrentACLPermission = $IdentityReference, $FileSystemRights, $InheritanceFlags, $PropagationFlags, $AccessControlType
-
+                        
                         try {
                             $CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission
                             $CurrentACL.AddAccessRule($CurrentAccessRule)
                         } catch {
-                        write-host $UserAccount
-                        Write-Host $dn
                             Write-Host "Error: `$CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission" -ForegroundColor Red
                             "Error: `$CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission" >> $logFile
                         }
                     }
-            } else {
-                $CurrentACL.AddAccessRule($_)
             }
         }
-    $CurrentACL
+    Write-Output $CurrentACL | select * -Unique
 }
 
 function Get-Member ($GroupName) {
     $Grouppath = "LDAP://" + $GroupName
     $GroupObj = [ADSI]$Grouppath
+
 #!#
 #Write-Host "    Group:"$GroupObj.cn.ToString()
 #!#
+
     $users = foreach ($member in $GroupObj.Member) {
         $UserPath = "LDAP://" + $member
         $UserObj = [ADSI]$UserPath
 
         if ($UserObj.groupType.Value -eq $null) { # if this is NOT a group (it's a user) then...
+
 #!#
 #Write-Host "        Member:"$UserObj.cn.ToString()
 #!#
+
             $member
         } else { # this is a group. redo loop.
             Get-Member -GroupName $member
@@ -110,7 +127,7 @@ function Get-Member ($GroupName) {
     $users | select -Unique
 }
 
-function acltohtml ($Path, $colACLs, $ShowAllAccounts, $Domain, $Comparison) {
+function acltohtml ($Path, $colACLs, $ShowAllAccounts, $Domain) {
 $saveDir = "$env:TEMP\Network Access"
 if (!(Test-Path $saveDir)) {mkdir "$saveDir\Logs" | Out-Null}
 $time = Get-Date -Format 'yyyyMMddHHmmss'
@@ -119,7 +136,7 @@ $report = "$saveDir\$saveName.html"
 '' > $report
 
 #region Function definitions
-function drawDirectory ($directory, $domain, $Comparison) {
+function drawDirectory ($directory, $Domain) {
     $dirHTML = '
         <div class="'
 
@@ -145,6 +162,10 @@ function drawDirectory ($directory, $domain, $Comparison) {
     if ($itemACL.AccessToString -ne $null) {
         # select -u because duplicates if inherited and not
         $acls = $itemACL.AccessToString.split("`n") | select -Unique | ? {$_ -notmatch '  -\d{9}$'} | sort
+    }
+    
+    if (!$ShowAllAccounts) {
+        $acls = $acls -match "^$domain\\" -notmatch '\\MAM-|\\\w{2}-\w{3}\d-\w{3}|\\a-|\\-svc-'
     }
 
     $dirHTML += '<tr><td>' + $itemACL.Owner + '</td></tr>
@@ -203,13 +224,7 @@ function drawDirectory ($directory, $domain, $Comparison) {
             }
         }
 
-        if (!$ShowAllAccounts) {
-            if ( Invoke-Expression $comparison ) {
-                $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
-            }
-        } else {
-            $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
-        }
+        $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
     }
 
     $dirHTML += '</tbody>
@@ -343,7 +358,7 @@ function drawDirectory ($directory, $domain, $Comparison) {
         Write-Progress @WrPrgParam
         $lasttime = Get-Date
 
-        drawDirectory -directory $acl -domain $Domain -Comparison $Comparison | Add-Content $report
+        drawDirectory -directory $acl -domain $Domain | Add-Content $report
     }
 
     '</div></body></html>' | Add-Content $report
@@ -355,7 +370,7 @@ function drawDirectory ($directory, $domain, $Comparison) {
     $report
 }
 
-function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain, $Comparison) {
+function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain) {
     $index = 0
     $total = $colACLs.Count
     $starttime = $lasttime = Get-Date
@@ -390,6 +405,10 @@ function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain, $Comparison
             $acls = $itemACL.AccessToString.split("`n") | select -Unique | <#? {$_ -notmatch '  -\d{9}$'} |#> sort
         }
         
+        if (!$ShowAllAccounts) {
+            $acls = $acls -match "^$domain\\" -notmatch '\\MAM-|\\\w{2}-\w{3}\d-\w{3}|\\a-|\\-svc-'
+        }
+
         $index2 = 0
         $total2 = $acls.Count
         $starttime2 = $lasttime2 = Get-Date
@@ -430,22 +449,11 @@ function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain, $Comparison
                 }
             }
 
-            if (!$ShowAllAccounts) {
-                if ( Invoke-Expression $Comparison ) {
-                    New-Object psobject -Property @{
-                        Folder = $directory.Folder
-                        Name   = $temp[0]
-                        Access = $temp[1]
-                        Rights = $temp[2]
-                    }
-                }
-            } else {
-                New-Object psobject -Property @{
-                    Folder = $directory.Folder
-                    Name   = $temp[0]
-                    Access = $temp[1]
-                    Rights = $temp[2]
-                }
+            New-Object psobject -Property @{
+                Folder = $directory.Folder
+                Name   = $temp[0]
+                Access = $temp[1]
+                Rights = $temp[2]
             }
         }
     }
@@ -510,9 +518,7 @@ function SIDtoName ([string]$SID) {
         $ShowAllAccounts = $true
     }
 
-    $comparison = '$temp[0] -match "^$domain\\" -and $temp[0] -notlike "*administrator*" -and $temp[0] -notlike "*BUILTIN*" -and $temp[0] -notlike "*NT AUTHORITY*" -and $temp[0] -notlike "CREATOR*" -and $temp[0] -notlike "S*" -and $temp[0] -notlike "*\MAM-*" -and $temp[0] -notmatch "\w{2}-\w{3}\d-\w{3}" -and $temp[0] -notmatch "\\a-" -and $temp[0] -notmatch "\\-svc-"'
-
-    $colFiles = New-Object System.Collections.ArrayList
+    $colFolders = New-Object System.Collections.ArrayList
 
     if ($Depth -eq 0) {
         # just continue
@@ -520,8 +526,8 @@ function SIDtoName ([string]$SID) {
     } elseif ($Depth -ne -1) {
         1..$Depth | % {
             # psiscontainer to only get directories
-            Get-ChildItem -Path ($Path + ('\*' * $_)) -Filter *. -Force | ? {$_.psiscontainer} | sort FullName | % {
-                $null = $colFiles.Add($_.FullName)
+            Get-ChildItem -Path ($Path + ('\*' * $_)) -Force | ? {$_.psiscontainer} | sort FullName | % {
+                $null = $colFolders.Add($_.FullName)
             }
         }
     }
@@ -545,10 +551,10 @@ function SIDtoName ([string]$SID) {
     $null = $colACLs.Add($myobj)
 
     $index = 0
-    $total = $colFiles.Count
+    $total = $colFolders.Count
     $starttime = $lasttime = Get-Date
     #* $file = $colFiles[0]
-    foreach ($file in $colFiles) {
+    foreach ($folder in $colFolders) {
         $index++
         $currtime = (Get-Date) - $starttime
         $avg = $currtime.TotalSeconds / $index
@@ -564,25 +570,25 @@ function SIDtoName ([string]$SID) {
                 "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
             ) -join ' '
             Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
-            CurrentOperation = "FOLDER: $file"
+            CurrentOperation = "FOLDER: $folder"
             PercentComplete = $index / $total * 100
         }
         Write-Progress @WrPrgParam
         $lasttime = Get-Date
 
         # calculate current folder depth
-        $matches = (([regex]'\\').matches($file.substring($Path.length, $file.length - $Path.length))).count
+        $matches = (([regex]'\\').matches($folder.substring($Path.length, $folder.length - $Path.length))).count
 
         $myobj = New-Object psobject -Property @{
-            Folder = $file
+            Folder = $folder
             ACL = ''
             Level = $matches - 1
         }
         
         if (!$ExpandGroups) {
-            $myobj.ACL = Get-Acl -Path $file
+            $myobj.ACL = Get-Acl -Path $folder
         } else {
-            $myobj.ACL = Get-FolderAcl -Path $file -Domain $domain #* $myobj.ACL = $CurrentACL
+            $myobj.ACL = Get-FolderAcl -Path $folder -Domain $domain #* $myobj.ACL = $CurrentACL
         }
 
         $null = $colACLs.Add($myobj)
@@ -594,8 +600,8 @@ function SIDtoName ([string]$SID) {
 
     # begin do stuff with all those acls...
     switch ($ReportFormat) {
-        'Console' {acltovariable -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain -Comparison $comparison}
-        'HTML'    {acltohtml -Path $Path -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain -Comparison $comparison}
+        'Console' {acltovariable -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain}
+        'HTML'    {acltohtml -Path $Path -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain}
         'Excel'   {acltoexcel -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts}
     }
 }
