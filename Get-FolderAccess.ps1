@@ -39,7 +39,14 @@ function Get-FolderAccess {
 
 function Get-FolderACL ([string]$Path, [string]$Domain) {
     
-    $CurrentACL = Get-Acl -Path $Path
+    # if you get access denied, skip the folder
+    try {
+        $CurrentACL = Get-Acl -Path $Path
+    } catch {
+        Write-Warning "Could not Get-Acl for $Path"
+        continue
+    }
+
     # can't use this because we need the owner?
     #$thisacl = Get-Acl -Path $Path
     #$CurrentACL = New-Object System.Security.AccessControl.DirectorySecurity
@@ -53,11 +60,6 @@ function Get-FolderACL ([string]$Path, [string]$Domain) {
 #!#
 #Write-Host "Folder: $root"
 #!#
-
-    # if you get access denied, skip the folder
-    if (!$CurrentACL) {
-        continue
-    }
 
     $CurrentACL.Access |
         ForEach-Object {
@@ -129,24 +131,29 @@ function Get-Member ($GroupName) {
 
 function acltohtml ($Path, $colACLs, $ShowAllAccounts, $Domain) {
 $saveDir = "$env:TEMP\Network Access"
-if (!(Test-Path $saveDir)) {mkdir "$saveDir\Logs" | Out-Null}
+if (!(Test-Path $saveDir)) {
+    $null = mkdir "$saveDir\Logs"
+}
 $time = Get-Date -Format 'yyyyMMddHHmmss'
 $saveName = "Network Access $time"
 $report = "$saveDir\$saveName.html"
 '' > $report
+$result = New-Object System.Text.StringBuilder
 
 #region Function definitions
 function drawDirectory ($directory, $Domain) {
-    $dirHTML = '
-        <div class="'
+    $dirHTML = New-Object System.Text.StringBuilder
+
+    $null = $dirHTML.Append('
+        <div class="')
 
     if ($directory.level -eq 0) {
-        $dirHTML += 'he0_expanded'
+        $null = $dirHTML.Append('he0_expanded')
     } else {
-        $dirHTML += 'he' + $directory.level
+        $null = $dirHTML.Append('he' + $directory.level)
     }
 
-    $dirHTML += '"><span class="sectionTitle" tabindex="0">Folder ' + $directory.Folder + '</span></div>
+    $null = $dirHTML.Append('"><span class="sectionTitle" tabindex="0">Folder ' + $directory.Folder + '</span></div>
         <div class="container">
         <div class="he4i">
         <div class="heACL">
@@ -154,9 +161,18 @@ function drawDirectory ($directory, $Domain) {
         <thead>
         <th scope="col"><b>Owner</b></th>
         </thead>
-        <tbody>'
+        <tbody>')
 
-    $acls = $null
+    $null = $dirHTML.Append('<tr><td>' + $itemACL.Owner + '</td></tr>
+        <tr>
+        <td>
+        <table>
+        <thead>
+        <th>User</th>
+        <th>Control</th>
+        <th>Privilege</th>
+        </thead>
+        <tbody>')
 
     $itemACL = $directory.ACL
     if ($itemACL.AccessToString -ne $null) {
@@ -167,18 +183,6 @@ function drawDirectory ($directory, $Domain) {
     if (!$ShowAllAccounts) {
         $acls = $acls -match "^$domain\\" -notmatch '\\MAM-|\\\w{2}-\w{3}\d-\w{3}|\\a-|\\-svc-'
     }
-
-    $dirHTML += '<tr><td>' + $itemACL.Owner + '</td></tr>
-        <tr>
-        <td>
-        <table>
-        <thead>
-        <th>User</th>
-        <th>Control</th>
-        <th>Privilege</th>
-        </thead>
-        <tbody>'
-
     
     $index = 0
     $total = $acls.Count
@@ -224,27 +228,25 @@ function drawDirectory ($directory, $Domain) {
             }
         }
 
-        $dirHTML += "<tr><td>" + $temp[0] + "</td><td>" + $temp[1] + "</td><td>" + $temp[2] + "</td></tr>"
+        $null = $dirHTML.Append('<tr><td>' + $temp[0] + '</td><td>' + $temp[1] + '</td><td>' + $temp[2] + '</td></tr>')
     }
 
-    $dirHTML += '</tbody>
+    $null = $dirHTML.Append('</tbody>
         </table>
         </td>
-        </tr>'
-
-    $dirHTML += '
+        </tr>
         </tbody>
         </table>
         </div>
         </div>
         <div class="filler"></div>
-        </div>'
+        </div>')
 
-    return $dirHTML
+    return $dirHTML.ToString()
 }
 #endregion
 #region Header, style and javascript functions needed by the html report
-@"
+$null = $result.Append(@"
 <html dir="ltr" xmlns:v="urn:schemas-microsoft-com:vml" gpmc_reportInitialized="false">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-16" />
@@ -327,11 +329,10 @@ function drawDirectory ($directory, $Domain) {
 </tr>
 </table>
 <div class="filler"></div>
-"@ | Set-Content $report
+'<div class="gposummary">'
+"@)
 #endregion
-#region Setting up the report
-    '<div class="gposummary">' | Add-Content $report
-    
+#region Setting up the report    
     $index = 0
     $total = $colACLs.Count
     $starttime = $lasttime = Get-Date
@@ -358,10 +359,12 @@ function drawDirectory ($directory, $Domain) {
         Write-Progress @WrPrgParam
         $lasttime = Get-Date
 
-        drawDirectory -directory $acl -domain $Domain | Add-Content $report
+        $null = $result.Append((drawDirectory -directory $acl -domain $Domain))
     }
 
-    '</div></body></html>' | Add-Content $report
+    $null = $result.Append('</div></body></html>')
+
+    $result.ToString() > $report
 #endregion
     if (!$DontOpen) {
         . $report
