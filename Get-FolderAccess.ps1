@@ -56,12 +56,16 @@ function Get-FolderACL ([string]$Path, [string]$Domain) {
     # or just filter out what i don't want (builtin, nt authority, etc...)
     #$CurrentACL.Access | % {$CurrentACL.RemoveAccessRule($_) | Out-Null} # does absolutely nothing???
 
-    $root = Split-Path $Path -Leaf
 #!#
+#$root = Split-Path $Path -Leaf
 #Write-Host "Folder: $root"
 #!#
 
     $CurrentACL.Access |
+        Where-Object {
+            # skip those whose rights are just a bunch of numbers because it won't let me add them to the FileSystemAccessrule
+            $_.FileSystemRights.ToString() -notmatch '^-?\d{5}'
+        } |
         ForEach-Object {
             # remove the domain\ in the name
             $UserAccount = $_.IdentityReference.ToString().Substring($_.IdentityReference.ToString().IndexOf('\') + 1)
@@ -74,7 +78,9 @@ function Get-FolderACL ([string]$Path, [string]$Domain) {
             # if ((([adsi]"LDAP://$_").userAccountControl[0] -band 2) -ne 0) {account is disabled}
 
             # if we're not interested in all the accounts, we may as well save time by not enumerating the admins groups for every single folder
-            if (!$ShowAllAccounts -and $UserAccount -match '(domain )?administrators') {
+            #if (!$ShowAllAccounts -and $UserAccount -match '(domain )?administrators') {
+            # changed to this because: if the account is not a member of the domain, your results will vary depending on your local groups of your whatever computer you're running this on
+            if ($UserAccount -match '(domain )?administrators') {
                 $CurrentACL.AddAccessRule($_)
             } else {
                 try {
@@ -84,7 +90,7 @@ function Get-FolderACL ([string]$Path, [string]$Domain) {
                 }
                 Get-Member $dn |
                     Where-Object { # filter out any ForeignSecurityPrincipals
-                        $_ -notmatch 'S-\d-\d-\d{2}-(\d{10}-){2}\d{9}-\d{5}'
+                        $_ -notmatch 'S-\d-\d-\d{1,}'
                     } |
                     ForEach-Object {
                         $IdentityReference = ([adsi]"LDAP://$_").samaccountname.ToString()
@@ -529,10 +535,14 @@ function SIDtoName ([string]$SID) {
     } elseif ($Depth -ne -1) {
         1..$Depth | % {
             # psiscontainer to only get directories
-            Get-ChildItem -Path ($Path + ('\*' * $_)) -Force | ? {$_.psiscontainer} | sort FullName | % {
+            Get-ChildItem -Path ($Path + ('\*' * $_)) -ErrorVariable GciError -ErrorAction SilentlyContinue | ? {$_.psiscontainer} | sort FullName | % {
                 $null = $colFolders.Add($_.FullName)
             }
         }
+    }
+
+    if ($GciError) {
+        $GciError | % {Write-Warning $_.exception.message}
     }
     
     # begin get all acls
