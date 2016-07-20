@@ -22,7 +22,6 @@
 # if ReportFormat is either HTML or Excel, it returns the path to the created report
 # 
 # TODO:
-# fix the -rights parameter
 # include email (maybe...)
 # include folder browser dialogue for chosing where to save the report (maybe...)
 
@@ -39,92 +38,79 @@ function Get-FolderAccess {
         [string]$Rights
     )
 
-function Get-FolderACL ([string]$Folder, [string]$Filter) {
+function Get-FolderACL ([string]$Path, [string]$Domain) {
 
-    $CurrentACL = Get-Acl $Folder
+    $CurrentACL = Get-Acl -Path $Path
     # could make hashtable of all current identities and exclude those from the output
     # or just filter out what i don't want (builtin, nt authority, etc...)
-    # don't need because of later filtering
-    # $CurrentACL.Access | % {$CurrentACL.RemoveAccessRule($_) | Out-Null} # does absolutely nothing??? :'( T_T
-	$root = Split-Path $Folder -Leaf
-
+    #$CurrentACL.Access | % {$CurrentACL.RemoveAccessRule($_) | Out-Null} # does absolutely nothing???
+    $root = Split-Path $Path -Leaf
 #!#
 #Write-Host "Folder: $root"
 #!#
-
-	(Get-Acl $Folder).Access |
-		Where-Object {
-            $(if ($Filter) {$_.FileSystemRights.ToString() -match $Filter} else {$true}) -and
-            $_.IdentityReference.ToString() -match "^$domain\\" -and
-            $_.FileSystemRights -notmatch '\d{6}' -and
-            $_.IdentityReference.ToString() -notmatch '\d{6}' #-and
-            #$_.IdentityReference.ToString() -notmatch '^Everyone$' -and
-            #$_.IdentityReference.ToString() -notmatch '^BUILTIN\\' -and
-            #$_.IdentityReference.ToString() -notmatch '^NT AUTHORITY\\' -and
-            #$_.IdentityReference.ToString() -notmatch '^CREATOR$' -and
-        } |
-    Select-Object `
-      @{Name = 'Folder'; Expression = {$root}},
-			@{Name = 'UserAccount'; Expression = {$_.IdentityReference.ToString().Substring($_.IdentityReference.ToString().IndexOf('\') + 1)}},
-      @{n='IdentityReference';e={$_.IdentityReference.ToString()}},
-			FileSystemRights,
-        InheritanceFlags, # retunrs "Read, Write" may need to remove space
-        PropagationFlags,
-        AccessControlType |
+    (Get-Acl -Path $Path).Access |
         ForEach-Object {
-          # $IdentityReference = $_.IdentityReference
-          $FileSystemRights  = $_.FileSystemRights  #* $FileSystemRights  = $access.FileSystemRights
-          $InheritanceFlags  = $_.InheritanceFlags  #* $InheritanceFlags  = $access.InheritanceFlags
-          $PropagationFlags  = $_.PropagationFlags  #* $PropagationFlags  = $access.PropagationFlags
-          $AccessControlType = $_.AccessControlType #* $AccessControlType = $access.AccessControlType
-          # if ((([adsi]"LDAP://$_").userAccountControl[0] -band 2) -ne 0) {account is disabled}
-          $dn = $(([adsisearcher]"samaccountname=$($_.UserAccount)").FindOne().Path.Substring(7))
-          Get-Member $dn |
-            Where-Object {
-              $_ -notmatch '-\d{10}-'
-            } |
-            ForEach-Object {
-              #* $IdentityReference = ([adsi]"LDAP://$obj").samaccountname
-              $IdentityReference = ([adsi]"LDAP://$_").samaccountname
-              $CurrentACLPermission = $IdentityReference,$FileSystemRights,$InheritanceFlags,$PropagationFlags,$AccessControlType
-              try {
-                $CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission
-                $CurrentACL.AddAccessRule($CurrentAccessRule)
-              } catch [system.exception] {
-                Write-Host "Error: `$CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission" -ForegroundColor Red
-                "Error: `$CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission" >> $logFile
-              }
+            # remove the domain\ in the name
+            $UserAccount = $_.IdentityReference.ToString().Substring($_.IdentityReference.ToString().IndexOf('\') + 1)
+            $IdentityReference = $_.IdentityReference.ToString()
+            $FileSystemRights  = $_.FileSystemRights.ToString() # returns "Read, Write" may need to remove space
+            $InheritanceFlags  = $_.InheritanceFlags.ToString() # returns "ContainerInherit, ObjectInherit" may need to remove space
+            $PropagationFlags  = $_.PropagationFlags.ToString() # mostly just 'none'
+            $AccessControlType = $_.AccessControlType.ToString() # either 'allow' or 'deny'
+            
+            # if ((([adsi]"LDAP://$_").userAccountControl[0] -band 2) -ne 0) {account is disabled}
+
+            if ($IdentityReference -notmatch "^$domain\\") {
+                try {
+                    $dn = ([adsisearcher]"samaccountname=$($UserAccount)").FindOne().Path.Substring(7)
+                } catch {
+                    $dn = $null
+                }
+                Get-Member $dn |
+                    ForEach-Object {
+                        $IdentityReference = ([adsi]"LDAP://$_").samaccountname
+                        $CurrentACLPermission = $IdentityReference, $FileSystemRights, $InheritanceFlags, $PropagationFlags, $AccessControlType
+
+                        try {
+                            $CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission
+                            $CurrentACL.AddAccessRule($CurrentAccessRule)
+                        } catch {
+                        write-host $UserAccount
+                        Write-Host $dn
+                            Write-Host "Error: `$CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission" -ForegroundColor Red
+                            "Error: `$CurrentAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $CurrentACLPermission" >> $logFile
+                        }
+                    }
+            } else {
+                $CurrentACL.AddAccessRule($_)
             }
         }
-  $CurrentACL
+    $CurrentACL
 }
 
 function Get-Member ($GroupName) {
-  $Grouppath = "LDAP://" + $GroupName
-  $GroupObj = [ADSI]$Grouppath
-
+    $Grouppath = "LDAP://" + $GroupName
+    $GroupObj = [ADSI]$Grouppath
 #!#
 #Write-Host "    Group:"$GroupObj.cn.ToString()
 #!#
+    $users = foreach ($member in $GroupObj.Member) {
+        $UserPath = "LDAP://" + $member
+        $UserObj = [ADSI]$UserPath
 
-  $users = foreach ($member in $GroupObj.Member) {
-    $UserPath = "LDAP://" + $member
-    $UserObj = [ADSI]$UserPath
-    if ($UserObj.groupType.Value -eq $null) { # if this is NOT a group (it's a user) then...
-
+        if ($UserObj.groupType.Value -eq $null) { # if this is NOT a group (it's a user) then...
 #!#
 #Write-Host "        Member:"$UserObj.cn.ToString()
 #!#
-
-      $member
-    } else { # this is a group. redo loop.
-      Get-Member($member)
+            $member
+        } else { # this is a group. redo loop.
+            Get-Member -GroupName $member
+        }
     }
-  }
-  $users | select -Unique
+    $users | select -Unique
 }
 
-function acltohtml ($Path, $colACLs, $ShowAllAccounts) {
+function acltohtml ($Path, $colACLs, $ShowAllAccounts, $Domain) {
 $saveDir = "$env:TEMP\Network Access"
 if (!(Test-Path $saveDir)) {mkdir "$saveDir\Logs" | Out-Null}
 $time = Get-Date -Format 'yyyyMMddHHmmss'
@@ -133,12 +119,12 @@ $report = "$saveDir\$saveName.html"
 '' > $report
 
 #region Function definitions
-function drawDirectory([ref] $directory) {
+function drawDirectory([ref] $directory, $Domain) {
     $dirHTML = '
         <div class="'
             if ($directory.value.level -eq 0) { $dirHTML += 'he0_expanded' } else { $dirHTML += 'he' + $directory.value.level }
             $dirHTML += '"><span class="sectionTitle" tabindex="0">Folder ' + $directory.value.Folder.FullName + '</span></div>
-						<div class="container">
+                        <div class="container">
                         <div class="he4i">
                                 <div class="heACL">
                                         <table class="info3" cellpadding="0" cellspacing="0">
@@ -197,8 +183,8 @@ $dirHTML += '
                                         </table>
                                 </div>
                         </div>
-						<div class="filler"></div>
-						</div>'
+                        <div class="filler"></div>
+                        </div>'
     return $dirHTML
 }
 #endregion
@@ -296,7 +282,7 @@ $dirHTML += '
             $count = 1
         }
         for ($i = 0; $i -lt $count; $i++) {
-                drawDirectory ([ref] $colACLs[$i]) | Add-Content $report
+                drawDirectory ([ref] $colACLs[$i], $Domain) | Add-Content $report
         }
         '</div></body></html>' | Add-Content $report
 #endregion
@@ -306,45 +292,96 @@ $dirHTML += '
     $report
 }
 
-function acltovariable ($colACLs, $ShowAllAccounts) {
+function acltovariable ($colACLs, $ShowAllAccounts, [string]$Domain) {
+    $index = 0
+    $total = $colACLs.Count
+    $starttime = $lasttime = Get-Date
     foreach ($directory in $colACLs) {
-        foreach ($itemacl in $directory.ACL) {
-            $acls = $null
-            if ($itemACL.AccessToString -ne $null) {
-                # select -u because duplicates if inherited and not
-                $acls = $itemACL.AccessToString.split("`n") | select -Unique | ? {$_ -notmatch '  -\d{9}$'} | sort
+        $index++
+        $currtime = (Get-Date) - $starttime
+        $avg = $currtime.TotalSeconds / $index
+        $last = ((Get-Date) - $lasttime).TotalSeconds
+        $left = $total - $index
+        $WrPrgParam = @{
+            Activity = (
+                "acltovariable $(Get-Date -f s)",
+                "Total: $($currtime -replace '\..*')",
+                "Avg: $('{0:N2}' -f $avg)",
+                "Last: $('{0:N2}' -f $last)",
+                "ETA: $('{0:N2}' -f ($avg * $left / 60))",
+                "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
+            ) -join ' '
+            Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
+            CurrentOperation = "FOLDER: $directory"
+            PercentComplete = $index / $total * 100
+            id = 1
+        }
+        Write-Progress @WrPrgParam
+        $lasttime = Get-Date
+
+        $itemACL = $directory.ACL
+        $acls = $null
+
+        if ($itemACL.AccessToString -ne $null) {
+            # select -u because duplicates if inherited and not
+            $acls = $itemACL.AccessToString.split("`n") | select -Unique | <#? {$_ -notmatch '  -\d{9}$'} |#> sort
+        }
+        
+        $index2 = 0
+        $total2 = $acls.Count
+        $starttime2 = $lasttime2 = Get-Date
+        foreach ($acl in $acls) {
+            #$temp = [regex]::split($acl, '(?<!(,|NT))\s+')
+            $temp = [regex]::split($acl, '\s+(?=Allow|Deny)|(?<=Allow|Deny)\s+')
+
+            if ($temp.count -eq 1) {
+                continue
             }
-            foreach ($acl in $acls) {
-                #$temp = [regex]::split($acl, '(?<!(,|NT))\s+')
-                $temp = [regex]::split($acl, '\s+(?=Allow|Deny)|(?<=Allow|Deny)\s+')                    
-                if ($temp.count -eq 1) {
-                    continue
-                }
 
-                # Check if account is Disabled
-                if ($temp[0] -match "^$domain\\") {
-                    if ((([adsi]([adsisearcher]"samaccountname=$($temp[0] -replace "^$domain\\")").findone().path).useraccountcontrol[0] -band 2) -ne 0) {
-                        # account is disabled
-                        $temp[0] += ' - DISABLED'
+            $index2++
+            $currtime2 = (Get-Date) - $starttime2
+            $avg2 = $currtime2.TotalSeconds / $index2
+            $last2 = ((Get-Date) - $lasttime2).TotalSeconds
+            $left2 = $total2 - $index2
+            $WrPrgParam2 = @{
+                Activity = (
+                    "Check if account is disabled $(Get-Date -f s)",
+                    "Total: $($currtime2 -replace '\..*')",
+                    "Avg: $('{0:N2}' -f $avg2)",
+                    "Last: $('{0:N2}' -f $last2)",
+                    "ETA: $('{0:N2}' -f ($avg2 * $left2 / 60))",
+                    "min ($([string](Get-Date).AddSeconds($avg2*$left2) -replace '^.* '))"
+                ) -join ' '
+                Status = "$index2 of $total2 ($left2 left) [$('{0:N2}' -f ($index2 / $total2 * 100))%]"
+                CurrentOperation = "USER: $($temp[0])"
+                PercentComplete = $index2 / $total2 * 100
+                id = 2
+            }
+            Write-Progress @WrPrgParam2
+            $lasttime2 = Get-Date
+
+            # if it is a domain account, see if it is disabled
+            if ($temp[0] -match "^$domain\\") {
+                if ((([adsi]([adsisearcher]"samaccountname=$($temp[0] -replace "^$domain\\")").findone().path).useraccountcontrol[0] -band 2) -ne 0) {
+                    $temp[0] += ' - DISABLED'
+                }
+            }
+
+            if (!$ShowAllAccounts) {
+                if ( Invoke-Expression $comparison ) {
+                    New-Object psobject -Property @{
+                        Folder = $directory.Folder
+                        Name   = $temp[0]
+                        Access = $temp[1]
+                        Rights = $temp[2]
                     }
                 }
-
-                if (!$ShowAllAccounts) {
-                    if ( Invoke-Expression $comparison ) {
-                        $access = New-Object psobject
-                        $access | Add-Member -MemberType NoteProperty -Name Folder -Value $directory.Folder.FullName
-                        $access | Add-Member -MemberType NoteProperty -Name Name   -Value $temp[0]
-                        $access | Add-Member -MemberType NoteProperty -Name Access -Value $temp[1]
-                        $access | Add-Member -MemberType NoteProperty -Name Rights -Value $temp[2]
-                        $access
-                    }
-                } else {
-                    $access = New-Object psobject
-                    $access | Add-Member -MemberType NoteProperty -Name Folder -Value $directory.Folder.FullName
-                    $access | Add-Member -MemberType NoteProperty -Name Name   -Value $temp[0]
-                    $access | Add-Member -MemberType NoteProperty -Name Access -Value $temp[1]
-                    $access | Add-Member -MemberType NoteProperty -Name Rights -Value $temp[2]
-                    $access
+            } else {
+                New-Object psobject -Property @{
+                    Folder = $directory.Folder
+                    Name   = $temp[0]
+                    Access = $temp[1]
+                    Rights = $temp[2]
                 }
             }
         }
@@ -353,7 +390,7 @@ function acltovariable ($colACLs, $ShowAllAccounts) {
 
 function acltoexcel ($colACLs, $ShowAllAccounts) {
     $saveDir = "$env:TEMP\Network Access"
-    if (!(Test-Path $saveDir)) {mkdir "$saveDir\Logs" | Out-Null}
+    if (!(Test-Path $saveDir)) {$null = mkdir "$saveDir\Logs"}
     $time = Get-Date -Format 'yyyyMMddHHmmss'
     $saveName = "Network Access $time"
     $report = "$saveDir\$saveName.csv"
@@ -361,7 +398,7 @@ function acltoexcel ($colACLs, $ShowAllAccounts) {
 
     acltovariable $colACLs $ShowAllAccounts | epcsv $report -NoTypeInformation
 
-    $xl = New-Object -com 'Excel.Application'
+    $xl = New-Object -ComObject 'Excel.Application'
     $wb = $xl.workbooks.open($report)
     $xlOut = $report.Replace('.csv', '')
     $ws = $wb.Worksheets.Item(1)
@@ -381,70 +418,123 @@ function acltoexcel ($colACLs, $ShowAllAccounts) {
     del $report
 
     if (!$DontOpen) {
-        . ($report -replace '.csv', '.xlsx')
+        . ($report -replace '\.csv$', '.xlsx')
     }
-    ($report -replace '.csv', '.xlsx')
+
+    $report -replace '\.csv$', '.xlsx'
+}
+
+function SIDtoName ([string]$SID) {
+    ([System.Security.Principal.SecurityIdentifier]($SID)).Translate([System.Security.Principal.NTAccount]).Value
 }
 
 ######### BEGIN DO STUFF ##########
 
     # set up defaults
     $domain = $env:USERDOMAIN
-    if ($Path.EndsWith('\')) { $Path = $Path.Substring(0,$Path.Length - 1) }
+
+    if ($Path.EndsWith('\')) {
+        $Path = $Path.TrimEnd('\')
+    }
+
     $allowedLevels = 6
-    if ($Depth -gt $allowedLevels -or $Depth -lt -1) {Throw 'Level out of range.'}
+
+    if ($Depth -gt $allowedLevels -or $Depth -lt -1) {
+        throw 'Level out of range.'
+    }
     
-    $comparison = '($acl -match "^$domain\\" -and $acl -notlike "*administrator*" -and $acl -notlike "*BUILTIN*" -and $acl -notlike "*NT AUTHORITY*" -and $acl -notlike "CREATOR*" -and $acl -notlike "S*")'
+    if (!$ExpandGroups) {
+        $ShowAllAccounts = $true
+    }
+
+    $comparison = '($acl -match "^$domain\\" -and $acl -notlike "*administrator*" -and $acl -notlike "*BUILTIN*" -and $acl -notlike "*NT AUTHORITY*" -and $acl -notlike "CREATOR*" -and $acl -notlike "S*" -and $acl -notlike "*\MAM-*" -and $acl -notmatch "\w{2}-\w{3}\d-\w{3}")'
     
-    # begin get all acls
+    $colFiles = New-Object System.Collections.ArrayList
+
     if ($Depth -eq 0) {
         # just continue
         #$colFiles = Get-ChildItem -path $Path -Filter *. -Recurse -Force | Sort-Object FullName
     } elseif ($Depth -ne -1) {
-        1..$Depth | % { [array]$colFiles += Get-ChildItem -path ($Path + ('\*' * $_)) -Filter *. -Force | Sort-Object FullName }
+        1..$Depth | % {
+            # psiscontainer to only get directories
+            Get-ChildItem -Path ($Path + ('\*' * $_)) -Filter *. -Force | ? {$_.psiscontainer} | sort FullName | % {
+                $null = $colFiles.Add($_.FullName)
+            }
+        }
+    }
+    
+
+    
+    # begin get all acls
+    $colACLs = New-Object System.Collections.ArrayList
+
+    $myobj = New-Object psobject -Property @{
+        Folder = $Path
+        ACL = ''
+        Level = 0
     }
 
-    $colACLs = @()
-    $myobj = '' | Select-Object Folder,ACL,level
-    $myobj.Folder = Get-Item $Path
     if (!$ExpandGroups) {
         $ShowAllAccounts = $true
-        $myobj.ACL = Get-Acl $Path
+        $myobj.ACL = Get-Acl -Path $Path
     } else {
-        $myobj.ACL = Get-FolderACL $Path $Rights
+        $myobj.ACL = Get-FolderACL -Path $Path -Domain $domain
     }
-    $myobj.level = 0
-    $colACLs += $myobj
 
+    $null = $colACLs.Add($myobj)
+
+    $index = 0
+    $total = $colFiles.Count
+    $starttime = $lasttime = Get-Date
     #* $file = $colFiles[0]
-    foreach($file in $colFiles)
-    {
-        $matches = (([regex]'\\').matches($file.FullName.substring($Path.length, $file.FullName.length - $Path.length))).count
-        if ($file.Mode -notlike 'd*') {
-                continue
+    foreach ($file in $colFiles) {
+        $index++
+        $currtime = (Get-Date) - $starttime
+        $avg = $currtime.TotalSeconds / $index
+        $last = ((Get-Date) - $lasttime).TotalSeconds
+        $left = $total - $index
+        $WrPrgParam = @{
+            Activity = (
+                "Get-FolderAccess $(Get-Date -f s)",
+                "Total: $($currtime -replace '\..*')",
+                "Avg: $('{0:N2}' -f $avg)",
+                "Last: $('{0:N2}' -f $last)",
+                "ETA: $('{0:N2}' -f ($avg * $left / 60))",
+                "min ($([string](Get-Date).AddSeconds($avg*$left) -replace '^.* '))"
+            ) -join ' '
+            Status = "$index of $total ($left left) [$('{0:N2}' -f ($index / $total * 100))%]"
+            CurrentOperation = "FOLDER: $file"
+            PercentComplete = $index / $total * 100
         }
-        $myobj = '' | Select-Object Folder, ACL, Level
-        $myobj.Folder = $file
-        $myobj.Level = $matches - 1
+        Write-Progress @WrPrgParam
+        $lasttime = Get-Date
+
+        # calculate current folder depth
+        $matches = (([regex]'\\').matches($file.substring($Path.length, $file.length - $Path.length))).count
+
+        $myobj = New-Object psobject -Property@{
+            Folder = $file
+            ACL = ''
+            Level = $matches - 1
+        }
+        
         if (!$ExpandGroups) {
-            $ShowAllAccounts = $true
-            $myobj.ACL = Get-Acl $file.FullName
+            $myobj.ACL = Get-Acl -Path $file
         } else {
-            $myobj.ACL = Get-FolderAcl $file.FullName $Rights #* $myobj.ACL = $CurrentACL
+            $myobj.ACL = Get-FolderAcl -Path $file -Domain $domain #* $myobj.ACL = $CurrentACL
         }
-        $colACLs += $myobj
+
+        $null = $colACLs.Add($myobj)
     }
 
-    # sort by folder then subs
-    $colACLs = $colACLs | sort { $_.folder.fullname }
+    # sort by folder then subs.
+    # this is because the root was added before the loop (putting all level 0 folders at the top, then level 1s above 2s, etc.), but sorting by name organizes it.
+    $colACLs = $colACLs | sort folder
 
     # begin do stuff with all those acls...
-    if ($ReportFormat -eq 'Console') {
-        acltovariable $colACLs $ShowAllAccounts
-    } elseif ($ReportFormat -eq 'HTML') {
-        acltohtml $Path $colACLs $ShowAllAccounts
-    } elseif ($ReportFormat -eq 'Excel') {
-        acltoexcel $colACLs $ShowAllAccounts
+    switch ($ReportFormat) {
+        'Console' {acltovariable -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain}
+        'HTML'    {acltohtml -Path $Path -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts -Domain $domain}
+        'Excel'   {acltoexcel -colACLs $colACLs -ShowAllAccounts $ShowAllAccounts}
     }
 }
-
