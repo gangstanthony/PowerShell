@@ -119,12 +119,12 @@ $report = "$saveDir\$saveName.html"
 '' > $report
 
 #region Function definitions
-function drawDirectory([ref]$directory) {
-    $domain = $env:USERDOMAIN
+function drawDirectory ($directory, $domain) {
+    #$domain = $env:USERDOMAIN
     $dirHTML = '
         <div class="'
-            if ($directory.value.level -eq 0) { $dirHTML += 'he0_expanded' } else { $dirHTML += 'he' + $directory.value.level }
-            $dirHTML += '"><span class="sectionTitle" tabindex="0">Folder ' + $directory.value.Folder.FullName + '</span></div>
+            if ($directory.level -eq 0) { $dirHTML += 'he0_expanded' } else { $dirHTML += 'he' + $directory.level }
+            $dirHTML += '"><span class="sectionTitle" tabindex="0">Folder ' + $directory.Folder + '</span></div>
                         <div class="container">
                         <div class="he4i">
                                 <div class="heACL">
@@ -133,7 +133,7 @@ function drawDirectory([ref]$directory) {
                                                         <th scope="col"><b>Owner</b></th>
                                                 </thead>
                                                 <tbody>'
-            foreach ($itemACL in $directory.value.ACL) {
+            foreach ($itemACL in $directory.ACL) {
                     $acls = $null
                     if ($itemACL.AccessToString -ne $null) {
                         # select -u because duplicates if inherited and not
@@ -277,19 +277,27 @@ $dirHTML += '
 #endregion
 #region Setting up the report
         '<div class="gposummary">' | Add-Content $report
-        if ($colACLs.count) {
-            $count = $colACLs.count
-        } else {
-            $count = 1
+
+        #if ($colACLs.count) {
+        #    $count = $colACLs.count
+        #} else {
+        #    $count = 1
+        #}
+
+        foreach ($acl in $colACLs) {
+            drawDirectory -directory $acl -domain $Domain | Add-Content $report
         }
-        for ($i = 0; $i -lt $count; $i++) {
-                drawDirectory ([ref]$colACLs[$i]) | Add-Content $report
-        }
+
+        #for ($i = 0; $i -lt $count; $i++) {
+        #    drawDirectory ([ref]$colACLs[$i]) | Add-Content $report
+        #}
+
         '</div></body></html>' | Add-Content $report
 #endregion
     if (!$DontOpen) {
         . $report
     }
+
     $report
 }
 
@@ -463,8 +471,6 @@ function SIDtoName ([string]$SID) {
             }
         }
     }
-    
-
     
     # begin get all acls
     $colACLs = New-Object System.Collections.ArrayList
