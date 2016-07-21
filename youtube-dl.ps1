@@ -3,10 +3,10 @@
 function ydl {
     param (
         [string]$url = (Get-Clipboard),
-        [switch]$u,
-        [string]$ydlpath = 'C:\temp\youtube-dl.exe',
         [ValidateSet('audio', 'video')]
-        [string]$type = 'audio'
+        [string]$type = 'audio',
+        [switch]$u,
+        [string]$ydlpath = "$env:userprofile\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe"
     )
     
     if ($u) {
@@ -14,7 +14,15 @@ function ydl {
     }
     
     if (!(Test-Path c:\temp)) {
-        md c:\temp | Out-Null
+        $null = md c:\temp
+    }
+    
+    if (!(Test-Path 'c:\temp\ffprobe.exe')) {
+        cp "$env:userprofile\Dropbox\Documents\PSScripts\youtube\ffprobe.exe" c:\temp
+    }
+
+    if (!(Test-Path 'c:\temp\ffmpeg.exe')) {
+        cp "$env:userprofile\Dropbox\Documents\PSScripts\youtube\ffmpeg.exe" c:\temp
     }
 
     cd c:\temp
@@ -34,5 +42,10 @@ function ydl {
         }
     } elseif ($url -match 'soundcloud') {
         . $ydlpath -wic -o '%(title)s.%(ext)s' $url
+    } else {
+        switch ($type) {
+            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(title)s.%(ext)s' $url }
+            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' $url }
+        }
     }
 }
