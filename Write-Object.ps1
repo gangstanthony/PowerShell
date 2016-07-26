@@ -24,7 +24,7 @@ function Write-Object {
         Write-Host $Header
     }
 
-    ($Object | Format-List * | Out-String) -split "`n" | ? {$_ -notmatch '^\s+?$'} | % {Write-Host $_}
+    ($Object | Format-List * | Out-String).Split("`n").Trim() | ? {$_ -notmatch '^(\s+)?$'} | % {Write-Host $_}
 
     if ($Footer) {
         Write-Host $Footer
