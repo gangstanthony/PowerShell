@@ -1,5 +1,6 @@
 # sorts properties by name.
 # ex: get-mailbox 'user' | sortprop
+# ex: (get-psdrive)[0] | sortprop
 
 filter sortprop {
     $obj = $_
