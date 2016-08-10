@@ -24,7 +24,7 @@ function Get-Shortcut {
         if (!$Path) {Throw 'No Source'}
 
         $Shortcut = $WshShell.CreateShortcut($Path)
-        Write-Output $Shortcut
+        $Shortcut | select *
     }
 
     end {
