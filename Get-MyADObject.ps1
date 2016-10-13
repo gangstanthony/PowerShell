@@ -28,7 +28,7 @@ function Get-MADObject {
 
     if ($name) {
         #$filter += "(|(samaccountname=*$name*)(name=*$name*)(displayname=*$name*)(userprincipalname=*$name*))"
-        $filter += "(|(samaccountname=$name)(name=$name)(sn=$name)(givenname=$name)(mail=$name@domain.com))"
+        $filter += "(|(samaccountname=$name)(name=$name)(sn=$name)(givenname=$name)(mail=$name@randgroup.com))"
     }
     if ($description) {
         if ($description -match '|') {
@@ -60,7 +60,7 @@ function Get-MADObject {
         $newsearchroot = -join $newsearchroot
         $searcher.SearchRoot = [adsi]$newsearchroot
     }
-    $searcher.PropertiesToLoad.AddRange(('name', 'displayname', 'sn', 'givenname', 'objectcategory', 'whencreated', 'whenchanged', 'pwdlastset', 'lastlogon', 'distinguishedname', 'samaccountname', 'userprincipalname', 'mail', 'operatingsystem', 'description', 'title', 'department', 'manager', 'telephonenumber', 'mobile', 'homedirectory', 'homedrive', 'c', 'co', 'st', 'l', 'streetaddress', 'postalcode', 'company', 'useraccountcontrol', 'member', 'memberof'))
+    $searcher.PropertiesToLoad.AddRange(('name', 'displayname', 'sn', 'givenname', 'objectcategory', 'whencreated', 'whenchanged', 'pwdlastset', 'lastlogon', 'distinguishedname', 'samaccountname', 'userprincipalname', 'mail', 'operatingsystem', 'description', 'title', 'department', 'manager', 'telephonenumber', 'mobile', 'scriptpath', 'homedirectory', 'homedrive', 'c', 'co', 'st', 'l', 'streetaddress', 'postalcode', 'company', 'useraccountcontrol', 'member', 'memberof'))
     
     $maxpwdage = ([adsi]"WinNT://$env:userdomain").maxpasswordage.value / 86400
     $(foreach ($object in $searcher.FindAll()) {
@@ -70,8 +70,8 @@ function Get-MADObject {
             LastName          = [string]$object.properties.sn
             FirstName         = [string]$object.properties.givenname
             ObjectCategory    = [string]$object.properties.objectcategory -replace '^cn=|,.*'
-            WhenCreated       = Get-Date ([string]$object.Properties.whencreated) -f 'yyyy/MM/dd HH:mm:ss'
-            WhenChanged       = Get-Date ([string]$object.Properties.whenchanged) -f 'yyyy/MM/dd HH:mm:ss'
+            WhenCreated       = $(try{ Get-Date ([string]$object.Properties.whencreated) -f 'yyyy/MM/dd HH:mm:ss' } catch {})
+            WhenChanged       = $(try{ Get-Date ([string]$object.Properties.whenchanged) -f 'yyyy/MM/dd HH:mm:ss' } catch {})
             PwdLastSet        = $(try{ Get-Date ([datetime]::fromfiletime($object.properties.pwdlastset[0])) -f 'yyyy/MM/dd HH:mm:ss' } catch {})
             PwdDoesNotExpire  = if (([string]$object.properties.useraccountcontrol -band 65536) -eq 0) {$false} else {$true}
             PwdIsExpired      = $(try{ if (($(Get-Date) - $(Get-Date ([datetime]::fromfiletime($object.properties.pwdlastset[0]))) | select -ExpandProperty days) -gt $maxpwdage) {$true} else {$false} }catch{})
@@ -87,6 +87,7 @@ function Get-MADObject {
             Manager           = [string]$object.properties.manager
             TelephoneNumber   = [string]$object.properties.telephonenumber
             Mobile            = [string]$object.properties.mobile
+            ScriptPath        = [string]$object.properties.scriptpath
             HomeDirectory     = [string]$object.properties.homedirectory
             HomeDrive         = [string]$object.properties.homedrive
             Country1          = [string]$object.properties.c
@@ -98,8 +99,22 @@ function Get-MADObject {
             Company           = [string]$object.properties.company
             AccountIsLocked   = $(try{ if ((([adsi]$object.path).psbase.InvokeGet('IsAccountLocked')) -eq $true) {$true} else {$false} }catch{ $null })
             AccountIsDisabled = if (([string]$object.Properties.useraccountcontrol -band 2) -eq 0) {$false} else {$true}
-            member            = $object.properties.member
-            memberof          = $object.properties.memberof
+            member            = $object.properties.member | sort
+            memberof          = $object.properties.memberof | sort
         }
-    }) | select name, displayname, lastname, firstname, objectcategory, whencreated, whenchanged, pwdlastset, PwdIsExpired, PwdDoesNotExpire, lastlogon, distinguishedname, samaccountname, userprincipalname, mail, operatingsystem, description, title, department, manager, telephonenumber, mobile, homedirectory, homedrive, country1, country2, state, city, streetaddress, postalcode, company, accountislocked, accountisdisabled, member, memberof
+    }) | select name, displayname, lastname, firstname, objectcategory, whencreated, whenchanged, pwdlastset, PwdIsExpired, PwdDoesNotExpire, lastlogon, distinguishedname, samaccountname, userprincipalname, mail, operatingsystem, description, title, department, manager, telephonenumber, mobile, scriptpath, homedirectory, homedrive, country1, country2, state, city, streetaddress, postalcode, company, accountislocked, accountisdisabled, member, memberof
 }
+
+<#
+$pwdset = get-date '2015/11/16 07:38:01'
+
+$pwdage = (get-date) - $pwdset | select -exp days
+$maxage = ([adsi]"WinNT://$env:userdomain").maxpasswordage.value / 86400
+
+'Expired:'
+if ($pwdage -gt $maxage) {
+    'yes'
+} else {
+    'no'
+}
+#>
