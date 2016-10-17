@@ -1,5 +1,7 @@
 # https://www.reddit.com/r/PowerShell/comments/4fyfau/does_anyone_know_of_a_module_or_wrapper_for/
 
+# must be admin
+
 function Get-BootConfigurationData {
     param (
         $bcdeditpath = (Join-Path $env:SystemRoot 'system32\bcdedit.exe')
@@ -9,7 +11,7 @@ function Get-BootConfigurationData {
     $bootconfigurationdata += ''
 
     $hash = $null
-    foreach ($line in $bootconfigurationdata) {
+    $result = foreach ($line in $bootconfigurationdata) {
         if ($line -eq '') {
             if ($hash) {
                 [pscustomobject]$hash
@@ -26,4 +28,8 @@ function Get-BootConfigurationData {
             $hash.Add($name, $value)
         }
     }
+
+    $props = $result | % {gm -in $_ -ty *property} | % name | select -u | sort
+
+    $result | select $props
 }
