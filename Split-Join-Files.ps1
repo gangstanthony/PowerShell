@@ -37,7 +37,7 @@ function Join-File ([string]$infilePrefix) {
     while (Test-Path $infileName) {
         $bytes = [System.IO.File]::ReadAllBytes($infileName)
         $ostream.Write($bytes, 0, $bytes.Count)
-        Write-Host "read $infileName"
+        Write-Host "Read $infileName"
         $chunkNum += 1
         $infileName = "$infilePrefix$chunkNum"
     }
