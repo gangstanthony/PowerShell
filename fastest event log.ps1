@@ -1,4 +1,4 @@
-
+# # https://www.reddit.com/r/PowerShell/comments/5hgr1g/help_getwinevent_filterxml_i_dont_get_it/
 
 $a1 = New-Object System.Collections.ArrayList
 $a2 = New-Object System.Collections.ArrayList
