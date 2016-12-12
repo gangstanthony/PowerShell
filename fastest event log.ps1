@@ -64,26 +64,26 @@ $a7 = New-Object System.Collections.ArrayList
 
     $null = $a7.Add($(Measure-Command {
         $ElevenDaysAgo = [Management.ManagementDateTimeConverter]::ToDmtfDateTime((date).AddDays(-11))
-        wmic ntevent where "logfile = 'System' and sourcename = 'Microsoft-Windows-Winlogon' and timewritten > '$ElevenDaysAgo'"
+        $events = wmic ntevent where "logfile = 'System' and sourcename = 'Microsoft-Windows-Winlogon' and timewritten > '$ElevenDaysAgo'"
     }).TotalSeconds)
 }
 
 " Method, Time
-filterhashtable, $($a1 | measure -Sum | % {$_.sum.tostring('000.000')})
-filterxpath, $($a2 | measure -Sum | % {$_.sum.tostring('000.000')})
-filterxml, $($a3 | measure -Sum | % {$_.sum.tostring('000.000')})
-get-eventlog, $($a4 | measure -Sum | % {$_.sum.tostring('000.000')})
-gwmi win32_ntlogevent, $($a5 | measure -Sum | % {$_.sum.tostring('000.000')})
-wevtutil, $($a6 | measure -Sum | % {$_.sum.tostring('000.000')})
-wmic, $($a7 | measure -Sum | % {$_.sum.tostring('000.000')})
+filterhashtable, $($a1 | measure -Average | % {$_.average.tostring('000.000')})
+filterxpath, $($a2 | measure -Average | % {$_.average.tostring('000.000')})
+filterxml, $($a3 | measure -Average | % {$_.average.tostring('000.000')})
+get-eventlog, $($a4 | measure -Average | % {$_.average.tostring('000.000')})
+gwmi win32_ntlogevent, $($a5 | measure -Average | % {$_.average.tostring('000.000')})
+wevtutil, $($a6 | measure -Average | % {$_.average.tostring('000.000')})
+wmic, $($a7 | measure -Average | % {$_.average.tostring('000.000')})
 " | ConvertFrom-Csv | sort time | ft -AutoSize
 
-# Method                Time   
-# ------                ----   
-# filterxml             001.082
-# filterxpath           001.549
-# wevtutil              001.633
-# filterhashtable       002.988
-# gwmi win32_ntlogevent 011.885
-# wmic                  014.355
-# get-eventlog          016.844
+# Method                Time
+# ------                ----
+# filterxml             000.096
+# filterxpath           000.112
+# wevtutil              000.118
+# filterhashtable       000.133
+# gwmi win32_ntlogevent 000.998
+# wmic                  001.071
+# get-eventlog          002.171
