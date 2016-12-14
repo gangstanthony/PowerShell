@@ -47,7 +47,7 @@ function Get-Files {
         [switch]$File,
         [ValidateSet('Robocopy', 'Dir', 'EnumerateFiles', 'AlphaFS')]
         [string]$Method = 'Robocopy',
-        [string]$AlphaFSPath = (Join-Path $env:windir 'AlphaFS.dll')
+        [string]$AlphaFSdllPath = "$env:USERPROFILE\Dropbox\Documents\PSScripts\Modules\Shared\AlphaFS.dll"
     )
     
     begin {
@@ -76,7 +76,7 @@ function Get-Files {
 
     process {
         if ($Method -eq 'Robocopy') {
-            $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', '/XJ', '/R:0', '/W:0'
+            $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', <#'/XJ',#> '/R:0', '/W:0'
             if ($Recurse) {$params += '/E'}
             if ($Include) {$params += $Include}
             foreach ($dir in $Path) {
@@ -108,6 +108,8 @@ function Get-Files {
                         if ($FullName) {
                             Write-Output $( $matches.FullName )
                         } else {
+                            [System.IO.FileInfo]$matches.fullname
+                            <#
                             $name = Split-Path $matches.FullName -Leaf
                             Write-Output $([pscustomobject]@{
                                 FullName = $matches.FullName
@@ -117,6 +119,7 @@ function Get-Files {
                                 Extension = $(if ($name.IndexOf('.') -ne -1) {'.' + $name.split('.')[-1]} else {'[None]'})
                                 DateModified = $matches.Date
                             })
+                            #>
                         }
                     } else {
                         # Uncomment to see all lines that were not matched in the regex above.
@@ -143,19 +146,22 @@ function Get-Files {
                             if ($FullName) {
                                 Write-Output $( $CurrentDir + $matches.Name )
                             } else {
+                                [System.IO.FileInfo]($CurrentDir + $matches.Name)
+                                <#
                                 Write-Output $([pscustomobject]@{
                                     Folder = $CurrentDir
                                     Name = $Matches.Name
                                     Size = $Matches.Size
                                     LastWriteTime = [datetime]$Matches.Date
                                 })
+                                #>
                             }
                         }
                     }
                 }
             }
         } elseif ($Method -eq 'AlphaFS') {
-            ipmo $AlphaFSPath
+            ipmo $AlphaFSdllPath
             if ($Recurse) {
                 $searchOption = 'AllDirectories'
             } else {
@@ -181,7 +187,7 @@ function Get-Files {
                     Write-Output $( [System.IO.Directory]::EnumerateFiles($dir, '*.*', $searchOption) | % {$_} )
                 } else {
                     [System.IO.Directory]::EnumerateFiles($dir, '*.*', $searchOption) | % {
-                        Write-Output $( [System.IO.FileInfo]::new($_) )
+                        Write-Output $([System.IO.FileInfo]$_)
                     }
                 }
             }
