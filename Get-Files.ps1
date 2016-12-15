@@ -108,8 +108,7 @@ function Get-Files {
                         if ($FullName) {
                             Write-Output $( $matches.FullName )
                         } else {
-                            [System.IO.FileInfo]$matches.fullname
-                            <#
+                            # [System.IO.FileInfo]$matches.fullname
                             $name = Split-Path $matches.FullName -Leaf
                             Write-Output $([pscustomobject]@{
                                 FullName = $matches.FullName
@@ -119,7 +118,6 @@ function Get-Files {
                                 Extension = $(if ($name.IndexOf('.') -ne -1) {'.' + $name.split('.')[-1]} else {'[None]'})
                                 DateModified = $matches.Date
                             })
-                            #>
                         }
                     } else {
                         # Uncomment to see all lines that were not matched in the regex above.
