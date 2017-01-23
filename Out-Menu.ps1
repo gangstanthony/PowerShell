@@ -4,7 +4,7 @@
 
 <# 
 .Synopsis 
-    This function provides a convenient way to convert a PowerShell object object to list of choices for user input. 
+    This function provides a convenient way to convert a PowerShell object to a list of choices for user input. 
  
 .DESCRIPTION 
     Creates a user selection menu based on a given object. Useful for converting any PowerShell object into a list of choices from which the user can select a subset of items. 
