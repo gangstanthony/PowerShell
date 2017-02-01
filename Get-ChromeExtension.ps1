@@ -7,6 +7,6 @@ function Get-ChromeExtension {
 
     Get-ChildItem "\\$ComputerName\c$\users\*\appdata\local\Google\Chrome\User Data\Default\Extensions\*\*\manifest.json" -ErrorAction SilentlyContinue | % {
         $_.FullName -match 'users\\(.*?)\\appdata' | Out-Null
-        Get-Content $_.FullName | ConvertFrom-Json | select @{n='ComputerName';e={$ComputerName}}, @{n='User';e={$Matches[1]}}, name, version
+        Get-Content $_.FullName -Raw | ConvertFrom-Json | select @{n='ComputerName';e={$ComputerName}}, @{n='User';e={$Matches[1]}}, name, version
     }
 }
