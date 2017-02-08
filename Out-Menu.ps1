@@ -135,10 +135,11 @@ function Out-Menu {
         } 
         Write-Host $prompt.ToString() 
  
-        for ($i = 0; $i -lt $Object.Count; $i++) { 
-            Write-Host "$('{0:D2}' -f ($i+1)). $($Object[$i])" 
-        } 
- 
+        $nums = $Object.Count.ToString().Length
+        for ($i = 0; $i -lt $Object.Count; $i++) {
+            Write-Host "$("{0:D$nums}" -f ($i+1)). $($Object[$i])"
+        }
+
         if ($Footer) { 
             Write-Host $Footer 
         } 
