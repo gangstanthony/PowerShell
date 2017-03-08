@@ -47,3 +47,29 @@ function Check-Flags ($sam = $env:USERNAME) {
 
     New-Object psobject -Property $hash
 }
+
+# check-flags -sam user1
+# SAM                            : user1
+# UAC                            : 66048
+# INTERDOMAIN_TRUST_ACCOUNT      : False
+# SERVER_TRUST_ACCOUNT           : False
+# PASSWD_CANT_CHANGE             : False
+# NORMAL_ACCOUNT                 : True
+# TEMP_DUPLICATE_ACCOUNT         : False
+# HOMEDIR_REQUIRED               : False
+# ENCRYPTED_TEXT_PWD_ALLOWED     : False
+# PARTIAL_SECRETS_ACCOUNT        : False
+# TRUSTED_FOR_DELEGATION         : False
+# DONT_EXPIRE_PASSWORD           : True
+# NOT_DELEGATED                  : False
+# WORKSTATION_TRUST_ACCOUNT      : False
+# PASSWD_NOTREQD                 : False
+# USE_DES_KEY_ONLY               : False
+# PASSWORD_EXPIRED               : False
+# TRUSTED_TO_AUTH_FOR_DELEGATION : False
+# MNS_LOGON_ACCOUNT              : False
+# DONT_REQ_PREAUTH               : False
+# LOCKOUT                        : False
+# SCRIPT                         : False
+# SMARTCARD_REQUIRED             : False
+# ACCOUNTDISABLE                 : False
