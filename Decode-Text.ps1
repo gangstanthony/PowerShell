@@ -7,24 +7,32 @@ function Decode-Text {
         [string]$Method = 'Base64'
     )
 
-    switch ($method) {
-        'SecureString' {
-            (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
-            #$marshal = [Runtime.InteropServices.Marshal] 
-            #$marshal::PtrToStringAuto( $marshal::SecureStringToBSTR(($text | convertto-securestring)) ) 
+    process {
+        if (!$Text) {
+            $Text = $input
         }
+    }
 
-        'SecureStringWithKey' {
-            (New-Object pscredential ' ', (ConvertTo-SecureString $text -Key (1..16))).GetNetworkCredential().Password
-        }
+    end {
+        switch ($method) {
+            'SecureString' {
+                (New-Object pscredential ' ', (ConvertTo-SecureString $text)).GetNetworkCredential().Password
+                #$marshal = [Runtime.InteropServices.Marshal] 
+                #$marshal::PtrToStringAuto( $marshal::SecureStringToBSTR(($text | convertto-securestring)) ) 
+            }
 
-        'Base64' {
-            [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($text))
-        }
+            'SecureStringWithKey' {
+                (New-Object pscredential ' ', (ConvertTo-SecureString $text -Key (1..16))).GetNetworkCredential().Password
+            }
 
-        'ASCII' {
-            $pwlength = $text.Length / 3 - 1
-            -join(0..$pwlength | % {[char](32 + $text.Substring(($_*3), 3))})
+            'Base64' {
+                [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($text))
+            }
+
+            'ASCII' {
+                $pwlength = $text.Length / 3 - 1
+                -join(0..$pwlength | % {[char](32 + $text.Substring(($_*3), 3))})
+            }
         }
     }
 }
