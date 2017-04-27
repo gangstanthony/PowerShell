@@ -7,7 +7,7 @@ function Get-MappedDrives {
     $reg.GetSubKeyNames() | ? {$_ -match '\d{4,5}$'} | % {
         $sid = $_
         $reg.OpenSubKey("$sid\Network").GetSubKeyNames() | % {
-            [pscustomobject]@{
+            New-Object psobject -Property @{
                 Computer = $computer
                 User = ([System.Security.Principal.SecurityIdentifier]($sid)).Translate([System.Security.Principal.NTAccount]).Value
                 DriveLetter = $_
