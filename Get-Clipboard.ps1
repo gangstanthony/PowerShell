@@ -1,6 +1,9 @@
-if (gcm get-clipboard -ea 0) {
+
+if (gcm Get-Clipboard -ea 0) {
     return
 }
+
+#https://www.reddit.com/r/PowerShell/comments/68jpzx/a_small_getclipboard_function_for_ps_before_v5/
 
 <# http://stackoverflow.com/questions/34700427/quickly-create-a-list-of-strings
 Add-Type -Assembly System.Windows.Forms | Out-Null
