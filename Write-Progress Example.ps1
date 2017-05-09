@@ -1,8 +1,3 @@
-
-##################
-# WRITE PROGRESS
-##################
-
 # need to move seconds left to its own parameter
 
 <# https://www.reddit.com/r/PowerShell/comments/4goous/question_about_modules_info_bar/
