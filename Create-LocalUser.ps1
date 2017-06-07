@@ -1,3 +1,6 @@
+
+# http://www.selfadsi.org/ads-attributes/user-userAccountControl.htm
+
 function Create-LocalUser {
     param (
         [string]$computer = $env:computername,
