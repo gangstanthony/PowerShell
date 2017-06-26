@@ -1,6 +1,9 @@
 # http://stackoverflow.com/questions/2434133/progress-during-large-file-copy-copy-item-write-progress
 # https://stackoverflow.com/questions/13883404/custom-robocopy-progress-bar-in-powershell
 
+# TODO
+# allow input of an array of fullpaths. right now it can only do a whole folder (recurse) or single file.
+
 function Copy-File {
     param (
         [string]$Path,
