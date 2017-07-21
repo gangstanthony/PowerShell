@@ -23,7 +23,7 @@ function Split-File ([string]$inFile, [int]$bufSize = 5mb) {
 }
 
 # all split files must be in same directory
-# specify a split file without number like:
+# specify a part file without number like:
 # c:\temp\file.txt.part
 function Join-File ([string]$infilePrefix) {
     $fileinfo = [System.IO.FileInfo]$infilePrefix
