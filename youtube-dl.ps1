@@ -44,9 +44,6 @@ function ydl {
         'worst' {'worst'}
     }
 
-    # i like to save space so:
-    # video quality is 360p or best if that is not an option
-    # audio only is lowest quality (-f 17)
     if ($url -match 'playlist') {
         switch ($type) {
             'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f $quality $url }
