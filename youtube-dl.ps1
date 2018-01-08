@@ -6,11 +6,14 @@ function ydl {
         [ValidateSet('audio', 'video')]
         [string]$type = 'audio',
         [switch]$u,
-        [string]$ydlpath = "$env:userprofile\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe"
+        [string]$ydlpath = "$env:userprofile\Dropbox\Documents\PSScripts\youtube\youtube-dl.exe",
+        [ValidateSet('auto', 'best', 'worst')]
+        [string]$quality = 'auto'
     )
     
     if ($u) {
         start $ydlpath -ArgumentList '--update'
+        return
     }
     
     if (!(Test-Path c:\temp)) {
@@ -27,18 +30,32 @@ function ydl {
 
     cd c:\temp
 
+    $quality = switch ($quality) {
+        'auto' {
+            if ($type -eq 'video') {
+                'best'
+            } else {
+                'best' # 'worst'
+            }
+        }
+
+        'best' {'best'}
+        
+        'worst' {'worst'}
+    }
+
     # i like to save space so:
     # video quality is 360p or best if that is not an option
     # audio only is lowest quality (-f 17)
     if ($url -match 'playlist') {
         switch ($type) {
-            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f '18/best' $url }
-            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f '17/worst' $url }
+            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f $quality $url }
+            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(autonumber)s %(title)s.%(ext)s' -f $quality $url }
         }
     } elseif ($url -match 'youtube') {
         switch ($type) {
-            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(title)s.%(ext)s' -f '18/best' $url }
-            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f '17/worst' $url }
+            'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(title)s.%(ext)s' -f $quality $url }
+            'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' -f $quality $url }
         }
     } elseif ($url -match 'soundcloud') {
         . $ydlpath -wic -o '%(title)s.%(ext)s' $url
@@ -47,5 +64,13 @@ function ydl {
             'video' { . $ydlpath --merge-output-format mp4 -wic -o '%(title)s.%(ext)s' $url }
             'audio' { . $ydlpath --extract-audio --audio-format mp3 -wic -o '%(title)s.%(ext)s' $url }
         }
+    }
+    
+    if (Test-Path 'c:\temp\ffprobe.exe') {
+        del 'c:\temp\ffprobe.exe'
+    }
+
+    if (Test-Path 'c:\temp\ffmpeg.exe') {
+        del 'c:\temp\ffmpeg.exe'
     }
 }
