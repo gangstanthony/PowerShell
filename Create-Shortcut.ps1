@@ -1,3 +1,5 @@
+# https://www.reddit.com/r/PowerShell/comments/7xa4sk/programmatically_create_shortcuts_w_run_as_admin/du6pro0/
+
 # Create-Shortcut
 # 
 # Create-Shortcut -Source C:\temp\test.txt -DestinationLnk C:\temp\test.txt.lnk
@@ -19,11 +21,11 @@ function Create-Shortcut {
         [string]$Arguments
     )
 
-    BEGIN {
+    begin {
         $WshShell = New-Object -ComObject WScript.Shell
     }
 
-    PROCESS {
+    process {
         if (!$Source) {Throw 'No Source'}
         if (!$DestinationLnk) {Throw 'No DestinationLnk'}
 
@@ -35,7 +37,7 @@ function Create-Shortcut {
         $Shortcut.Save()
     }
 
-    END {
+    end {
         function Release-Ref ($ref) {
             ([System.Runtime.InteropServices.Marshal]::ReleaseComObject([System.__ComObject]$ref) -gt 0)
             [System.GC]::Collect()
