@@ -1,5 +1,8 @@
 # http://stackoverflow.com/questions/4533570/in-powershell-how-do-i-split-a-large-binary-file
 
+# TODO
+# script requires full path - does not work with relative paths like ".\some\sub\file.txt"
+
 # specify file name and size of each part (5mb)
 # new files are like:
 # c:\temp\file.txt.part1
