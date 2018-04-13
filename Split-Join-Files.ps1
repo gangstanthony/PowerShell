@@ -3,6 +3,7 @@
 # TODO
 # script requires full path - does not work with relative paths like ".\some\sub\file.txt"
 # include option to specify number of desired parts (each part size would be totalsize/#ofdesiredparts)
+# maybe include in each file name the total number of expected files? so you know if some are missing
 
 # specify file name and size of each part (5mb)
 # new files are like:
