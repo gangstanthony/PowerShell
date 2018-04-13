@@ -2,6 +2,7 @@
 
 # TODO
 # script requires full path - does not work with relative paths like ".\some\sub\file.txt"
+# include option to specify number of desired parts (each part size would be totalsize/#ofdesiredparts)
 
 # specify file name and size of each part (5mb)
 # new files are like:
