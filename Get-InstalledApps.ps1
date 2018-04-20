@@ -1,3 +1,5 @@
+# note: might have to use enable-psremoting first if no results are returned
+
 function Get-InstalledApps {
     param (
         [Parameter(ValueFromPipeline=$true)]
