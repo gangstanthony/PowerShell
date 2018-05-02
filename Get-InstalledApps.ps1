@@ -1,3 +1,6 @@
+# a more complete script can be found here:
+# https://community.spiceworks.com/scripts/show_download/2170-get-a-list-of-installed-software-from-a-remote-computer-fast-as-lightning
+
 # note: might have to use enable-psremoting first if no results are returned
 
 function Get-InstalledApps {
