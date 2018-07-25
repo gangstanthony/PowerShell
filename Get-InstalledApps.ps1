@@ -3,6 +3,20 @@
 
 # note: might have to use enable-psremoting first if no results are returned
 
+<#
+friends don't let friends use win32_product to query for installed programs
+https://sdmsoftware.com/group-policy-blog/wmi/why-win32_product-is-bad-news/
+https://blogs.technet.microsoft.com/heyscriptingguy/2011/12/14/use-powershell-to-find-and-uninstall-software/
+https://blogs.technet.microsoft.com/heyscriptingguy/2011/11/13/use-powershell-to-quickly-find-installed-software/
+http://powershell.org/wp/forums/topic/alternatives-to-win32_product/
+this is what i use to get installed programs
+https://github.com/gangstanthony/PowerShell/blob/master/Get-InstalledApps.ps1
+example usage
+    Get-InstalledApps -ComputerName $env:COMPUTERNAME -NameRegex '^java'
+you will get an uninstallstring returned from that as well. you can use one of the methods below to run the uninstaller on the remote computer
+https://www.reddit.com/r/PowerShell/comments/4l5kkm/what_are_all_or_at_least_the_most_common_ways_to/
+#>
+
 function Get-InstalledApps {
     param (
         [Parameter(ValueFromPipeline=$true)]
