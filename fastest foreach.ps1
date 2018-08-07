@@ -52,13 +52,13 @@ $a7 = New-Object System.Collections.ArrayList
 }
 
 "Method, Time
-`$b.processname, $($a1 | measure -Average | % {$_.average.tostring('000000.000')})
-foreach (`$p in `$b) {`$p.ProcessName}, $($a2 | measure -Average | % {$_.average.tostring('000000.000')})
-@(`$b).foreach{`$_.processname}, $($a3 | measure -Average | % {$_.average.tostring('000000.000')})
-`$b | % {`$_.processname}, $($a4 | measure -Average | % {$_.average.tostring('000000.000')})
+`$b.processname,                          $($a1 | measure -Average | % {$_.average.tostring('000000.000')})
+foreach (`$p in `$b) {`$p.ProcessName},   $($a2 | measure -Average | % {$_.average.tostring('000000.000')})
+@(`$b).foreach{`$_.processname},          $($a3 | measure -Average | % {$_.average.tostring('000000.000')})
+`$b | % {`$_.processname},                $($a4 | measure -Average | % {$_.average.tostring('000000.000')})
 `$b | select -ExpandProperty processname, $($a5 | measure -Average | % {$_.average.tostring('000000.000')})
-`$b | % processname, $($a6 | measure -Average | % {$_.average.tostring('000000.000')})
-(`$b).{processname}, $($a7 | measure -Average | % {$_.average.tostring('000000.000')})
+`$b | % processname,                      $($a6 | measure -Average | % {$_.average.tostring('000000.000')})
+(`$b).{processname},                      $($a7 | measure -Average | % {$_.average.tostring('000000.000')})
 " | ConvertFrom-Csv | sort time | ft -AutoSize
 
 # Method                                  Time      
