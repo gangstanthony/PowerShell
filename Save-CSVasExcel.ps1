@@ -25,6 +25,8 @@ function Save-CSVasExcel {
     PROCESS {
         $wb = $xl.workbooks.open($CSVFile)
         $xlOut = $CSVFile -replace '\.csv$', '.xlsx'
+        
+        # can comment out this part if you don't care to have the columns autosized
         $ws = $wb.Worksheets.Item(1)
         $range = $ws.UsedRange 
         [void]$range.EntireColumn.Autofit()
