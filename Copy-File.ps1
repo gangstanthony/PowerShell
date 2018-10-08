@@ -6,6 +6,7 @@
 
 # NOTE!
 # looks like this is not a typical file copy... data is copied, but not ACL or timestamp.
+# after running this, i had to do robocopy (src) (dst) /copy:t to copy the timestamp.
 
 function Copy-File {
     param (
