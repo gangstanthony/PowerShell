@@ -4,6 +4,9 @@
 # TODO
 # allow input of an array of fullpaths. right now it can only do a whole folder (recurse) or single file.
 
+# NOTE!
+# looks like this is not a typical file copy... data is copied, but not ACL or timestamp.
+
 function Copy-File {
     param (
         [string]$Path,
