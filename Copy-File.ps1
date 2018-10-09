@@ -8,7 +8,7 @@
 # * RECURSE is always forced
 # * When copying a single file, you cannot specify a destination file name, only the destination path.
 # * When copying a folder, the source folder is created inside the destinination folder.
-# * Looks like this is not a typical file copy... data is copied, but not ACL or timestamp.
+# * Looks like this is not a typical file copy... data is copied, but not timestamp.
 #     after running this, i had to do robocopy (src) (dst) /copy:t to copy the timestamp.
 
 function Copy-File {
