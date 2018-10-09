@@ -1,3 +1,4 @@
+# acltohtml source: https://www.experts-exchange.com/questions/25066855/How-to-stretch-the-User-Column-in-this-report.html
 # Best to run as admin account or you might get "Attempted to perform an unauthorized operation" on folders you can't access.
 # Depth 0 = only specified folder. # This used to be set to folder and recurse all subs
 # Depth 1-6 = works for folder and it's children
