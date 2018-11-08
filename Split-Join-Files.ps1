@@ -5,7 +5,7 @@
 
 # TODO
 # script requires full path - does not work with relative paths like ".\some\sub\file.txt"
-# fix note above on split-file by checking first to see if estimated file name exists, then error out or add parameter for -force
+# fix note above on split-file by checking first to see if part file name exists, then error out or add parameter for -force
 # fix note above on join-file by adding "-1" etc to file name if it already exists
 # include option to specify number of desired parts (each part size would be totalsize/#ofdesiredparts)
 # maybe include in each file name the total number of expected files? so you know if some are missing
