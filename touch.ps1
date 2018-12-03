@@ -20,10 +20,10 @@ function touch {
 
     if (Test-Path $file) {
         (Get-Item $file).LastWriteTime = [datetime]$date
-    } elseif ($dir -and !(Test-Path $dir)) {
+    } elseif ($dir -and !(Test-Path -LiteralPath $dir)) {
         $null = mkdir $dir
-        $null > $file
+        New-Item $file -ItemType File
     } else {
-        $null > $file
+        New-Item $file -ItemType File
     }
 }
