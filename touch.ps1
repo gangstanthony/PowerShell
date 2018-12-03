@@ -22,8 +22,8 @@ function touch {
         (Get-Item $file).LastWriteTime = [datetime]$date
     } elseif ($dir -and !(Test-Path -LiteralPath $dir)) {
         $null = mkdir $dir
-        New-Item $file -ItemType File
+        $null = New-Item $file -ItemType File
     } else {
-        New-Item $file -ItemType File
+        $null = New-Item $file -ItemType File
     }
 }
