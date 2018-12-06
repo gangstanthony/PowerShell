@@ -12,7 +12,18 @@
 
 # (gwmi win32_loggedonuser).antecedent # this is remote connections, not necessarily logons. includes computers and users connected to print servers
 
-<# all these give about the same information. the first two might give more
+# get remote computer idle time!
+# http://stackoverflow.com/questions/38664300/log-off-multiple-idle-users
+
+<#
+$owners = @{}
+gwmi win32_process -computer $env:computername -Filter 'name = "explorer.exe"' | % {$owners[$_.handle] = $_.getowner().user}
+get-process -computer $env:computername explorer | % {$owners[$_.id.tostring()]}
+#>
+
+<# all give about the same information. the first two might give more
+# https://www.reddit.com/r/PowerShell/comments/4dwqlc/crypto_tripwire_-_help_with_script/d1v0jg5?context=3
+(quser) -replace '\s{2,}', ',' | ConvertFrom-Csv
 $server = 'localhost'
 
 # IDENTICAL
@@ -28,29 +39,33 @@ qprocess explorer.exe /server:$server
 
 function Get-User {
     param (
-        $comps = $env:COMPUTERNAME,
-        [Parameter(ValidateSet=('process', 'dir', 'computersystem'))]
-        $method = 'process'
+        [string]$comp = $env:COMPUTERNAME,
+        [ValidateSet('computersystem', 'process', 'dir')]
+        $method = 'computersystem'
     )
     
-    foreach ($computer in $comps) {
-        if ($method -eq 'dir') {
-            Get-ChildItem \\$Computer\c$\users -Directory -Exclude '*$*' | % {dir $_.FullName ntuser.dat* -Force -ea  0} | sort LastWriteTime -Descending | select @{n='Computer';e={$Computer}}, @{n='User';e={Split-Path (Split-Path $_.FullName) -Leaf}}, LastWriteTime | ? user -notmatch '\.net'| group computer, user | % {$_.group | select -f 1}
-        } elseif ($method -eq 'computersystem') {
+    switch ($method) {
+        'dir' {
+            Get-ChildItem \\$comp\c$\users -Directory -Exclude '*$*' | % {Get-ChildItem $_.FullName ntuser.dat* -Force -ea 0} | sort LastWriteTime -Descending | select @{n='Computer';e={$comp}}, @{n='User';e={Split-Path (Split-Path $_.FullName) -Leaf}}, LastWriteTime | ? user -notmatch '\.net'| group computer, user | % {$_.group | select -f 1}
+        }
+
+        'computersystem' {
             try {
-                (gwmi win32_computerSystem -ComputerName $computer).username
-            } catch [System.Exception] {
+                (Get-WmiObject win32_computerSystem -ComputerName $comp).username
+            } catch {
                 try {
-                    [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$computer).OpenSubKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI').getvalue('LastLoggedOnUser')
-                    gwmi Win32_NetworkLoginProfile -ComputerName $computer
-                } catch [System.Exception] {
-                    return 'Error'
+                    [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $comp).OpenSubKey('SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI').getvalue('LastLoggedOnUser')
+                    Get-WmiObject Win32_NetworkLoginProfile -ComputerName $comp
+                } catch {
+                    'Error'
                 }
             }
-        } else {
+        }
+
+        'process' {
             $owners = @{}
-            gwmi win32_process -ComputerName $computer -Filter 'name = "explorer.exe"' | % {$owners[$_.handle] = $_.getowner().user}
-            get-process -ComputerName $computer explorer | % {$owners[$_.id.tostring()]}
+            Get-WmiObject win32_process -Filter 'name = "explorer.exe"' -ComputerName $comp | % {$owners[$_.handle] = $_.getowner().user}
+            Get-Process explorer -ComputerName $comp | % {$owners[$_.id.tostring()]}
         }
     }
 }
