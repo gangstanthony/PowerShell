@@ -1,4 +1,6 @@
 # https://knowledge.zomers.eu/PowerShell/Pages/How-to-control-UserAccountControl-Active-Directory-flags-with-PowerShell.aspx
+# https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/
+# https://www.reddit.com/r/PowerShell/comments/aldehr/getaduser_filter_not_working/
 
 function Check-Flags ($sam = $env:USERNAME) {
     $uac = [int](([adsisearcher]"samaccountname=$sam").FindOne().Properties.useraccountcontrol | Out-String).Trim()
