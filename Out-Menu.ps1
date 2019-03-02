@@ -2,6 +2,7 @@
 # https://www.reddit.com/r/PowerShell/comments/49tqgx/need_some_help_with_an_automation_script_im/
 # http://stackoverflow.com/questions/885349/how-to-write-a-powershell-script-that-accepts-pipeline-input
 # http://www.powertheshell.com/input_psv3/
+# https://www.reddit.com/r/PowerShell/comments/9ra07k/switch_within_a_switch/e8faxic/
 
 # similar
 # https://gist.github.com/QuietusPlus/59d8612ec13ea929704542eb0bd8d52c # write-menu

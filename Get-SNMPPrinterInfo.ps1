@@ -1,3 +1,13 @@
+# other powershell snmp information
+# https://solvedbypowershell.blogspot.com/2014/12/powershell-using-snmp-for-html-network.html
+# https://www.powershellgallery.com/packages/Proxx.SNMP/1.0.1.2/Content/Invoke-SnmpGet.ps1
+# https://www.powershellgallery.com/packages/Proxx.SNMP/1.0.0.1/Content/Invoke-SnmpWalk.ps1
+# https://exchange.nagios.org/directory/Plugins/Hardware/Printers/SNMP-Printer-Check/details
+# https://www.powershellgallery.com/packages/Proxx.SNMP/1.1.1.4
+# https://www.reddit.com/r/PowerShell/comments/77ls36/printer_page_counter_from_print_server/
+# https://gallery.technet.microsoft.com/Get-PrintStatistics-a6bb8323
+# https://gallery.technet.microsoft.com/scriptcenter/Script-to-generate-print-84bdcf69
+
 function Get-SNMPPrinterInfo {
     param (
         [string[]]$printers

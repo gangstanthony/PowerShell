@@ -1,3 +1,6 @@
+
+# https://www.reddit.com/r/PowerShell/comments/9424kw/how_to_create_a_progress_bar_for_anyall/e3hrt6a/?context=3
+
 # need to move seconds left to its own parameter
 
 <# https://www.reddit.com/r/PowerShell/comments/4goous/question_about_modules_info_bar/

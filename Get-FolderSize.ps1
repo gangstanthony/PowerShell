@@ -82,7 +82,7 @@ function Get-FolderSize {
         switch ($Use) {
             'All' {
                 try {
-                    $fso = Get-FolderSizeFSO $Path | select *, @{n='Used';e={'FSO'}}
+                    $fso = Get-FolderSizeFSO $Path | select *, @{n='Use';e={'FSO'}}
                     if ($fso.size) {
                         $fso
                     } else {
@@ -90,7 +90,7 @@ function Get-FolderSize {
                     }
                 } catch {
                     try {
-                        $robo = Get-FolderSizeRobocopy $Path | select *, @{n='Used';e={'Robocopy'}}
+                        $robo = Get-FolderSizeRobocopy $Path | select *, @{n='Use';e={'Robocopy'}}
                         if ($robo.size) {
                             $robo
                         } else {
@@ -98,13 +98,13 @@ function Get-FolderSize {
                         }
                     } catch {
                         try {
-                            Get-FolderSizeGCI $Path | select *, @{n='Used';e={'GCI'}}
+                            Get-FolderSizeGCI $Path | select *, @{n='Use';e={'GCI'}}
                         } catch {
                             New-Object psobject -prop @{
                                 Path = $Path
                                 Count = $null
                                 Size = $null
-                                Using = 'Error'
+                                Use = 'Error'
                             }
                         }
                     }

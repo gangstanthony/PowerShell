@@ -1,5 +1,8 @@
 # https://www.reddit.com/r/PowerShell/comments/5hgr1g/help_getwinevent_filterxml_i_dont_get_it/
 
+# get info (total count) for each log
+# https://www.reddit.com/r/PowerShell/comments/5m8zxq/pssession_showing_different_information/dc1teyt/
+
 $a1 = New-Object System.Collections.ArrayList
 $a2 = New-Object System.Collections.ArrayList
 $a3 = New-Object System.Collections.ArrayList
@@ -8,7 +11,7 @@ $a5 = New-Object System.Collections.ArrayList
 $a6 = New-Object System.Collections.ArrayList
 $a7 = New-Object System.Collections.ArrayList
 
-1..50 | % {
+1..5 | % {
     $null = $a1.Add($(Measure-Command {
         # filterhashtable
         $filterhashtable = @{
@@ -68,14 +71,14 @@ $a7 = New-Object System.Collections.ArrayList
     }).TotalSeconds)
 }
 
-" Method, Time
-filterhashtable, $($a1 | measure -Average | % {$_.average.tostring('000.000')})
-filterxpath, $($a2 | measure -Average | % {$_.average.tostring('000.000')})
-filterxml, $($a3 | measure -Average | % {$_.average.tostring('000.000')})
-get-eventlog, $($a4 | measure -Average | % {$_.average.tostring('000.000')})
+"Method, Time
+filterhashtable,       $($a1 | measure -Average | % {$_.average.tostring('000.000')})
+filterxpath,           $($a2 | measure -Average | % {$_.average.tostring('000.000')})
+filterxml,             $($a3 | measure -Average | % {$_.average.tostring('000.000')})
+get-eventlog,          $($a4 | measure -Average | % {$_.average.tostring('000.000')})
 gwmi win32_ntlogevent, $($a5 | measure -Average | % {$_.average.tostring('000.000')})
-wevtutil, $($a6 | measure -Average | % {$_.average.tostring('000.000')})
-wmic, $($a7 | measure -Average | % {$_.average.tostring('000.000')})
+wevtutil,              $($a6 | measure -Average | % {$_.average.tostring('000.000')})
+wmic,                  $($a7 | measure -Average | % {$_.average.tostring('000.000')})
 " | ConvertFrom-Csv | sort time | ft -AutoSize
 
 # Method                Time

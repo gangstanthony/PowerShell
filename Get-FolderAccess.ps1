@@ -1,3 +1,9 @@
+# NOTE: working on v2, but this is kind of a mess, and you may be better off using NTFSSecurity module with acltohtml to build a report
+# 
+# https://github.com/raandree/NTFSSecurity
+# 
+# acltohtml source: https://fossil.include-once.org/poshcode/artifact/e58827e740ef882e
+# 
 # Best to run as admin account or you might get "Attempted to perform an unauthorized operation" on folders you can't access.
 # Depth 0 = only specified folder. # This used to be set to folder and recurse all subs
 # Depth 1-6 = works for folder and it's children
