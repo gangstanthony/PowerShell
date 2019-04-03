@@ -7,8 +7,23 @@
 #RoboCopy c:\source c:\destination myfile.txt /move
 #RoboCopy c:\source c:\destination *.txt /move
 
-# fix: write-verbose
-# 
+# created this because robocopy does not experience the following error:
+# Get-ChildItem : The specified path, file name, or both are too long. The fully qualified file name must be less than 260
+# characters, and the directory name must be less than 248 characters.
+
+# TODO
+# make all methods output similar results
+# add write-verbose
+# redo using [fileinfo] (look to "c# get files" or google ".net enumeratefiles skip on error access denied" for details)
+
+### !*!*!* W-A-R-N-I-N-G *!*!*! ###
+##
+# expects directory as an argument. gives weird error trying to assume a file is a folder if given as Path
+# only robocopy uses $exclude. really, you should only use robocopy. all the rest have been neglected because of the long file path error
+# i should really make a robocopy only version of this to cut the garbage...
+##
+### !*!*!* W-A-R-N-I-N-G *!*!*! ###
+
 # List files (and folders) -recursively
 # Input: Array of folder paths
 # Output: PSObject; FullName, Date, Size; Sorted by FullName
@@ -37,10 +52,18 @@
 # 
 # robocopy .\ null /l /e /njh /ndl /bytes /fp /nc /ts /xj /r:0 /w:0
 
+# :( T_T Q_Q
+# robocopy misses l attributes (reparse points)
+# alphafs - like enum - quits on first error
+
 function Get-Files {
+    [cmdletbinding()]
     param (
+        [parameter(ValueFromPipeline=$true)]
         [string[]]$Path = $PWD,
         [string[]]$Include,
+        [string[]]$ExcludeDirs,
+        [string[]]$ExcludeFiles,
         [switch]$Recurse,
         [switch]$FullName,
         [switch]$Directory,
@@ -58,14 +81,18 @@ function Get-Files {
         $Path = (Resolve-Path $Path).ProviderPath
 
         function CreateFolderObject {
-            $name = New-Object System.Text.StringBuilder
-            $null = $name.Append((Split-Path $matches.FullName -Leaf))
+            # commenting out to deal with constrained mode
+            #$name = New-Object System.Text.StringBuilder
+            $name = ''
+            #$null = $name.Append((Split-Path $matches.FullName -Leaf))
+            $name += $(Split-Path $matches.FullName -Leaf)
             if (-not $name.ToString().EndsWith('\')) {
-                $null = $name.Append('\')
+                #$null = $name.Append('\')
+                $null += '\'
             }
-            Write-Output $([pscustomobject]@{
+            Write-Output $(new-object psobject -prop @{
                 FullName = $matches.FullName
-                DirectoryName = Split-Path $matches.FullName
+                DirectoryName = $($matches.FullName.substring(0, $matches.fullname.lastindexof('\')))
                 Name = $name.ToString()
                 Size = $null
                 Extension = '[Directory]'
@@ -79,12 +106,16 @@ function Get-Files {
             $params = '/L', '/NJH', '/BYTES', '/FP', '/NC', '/TS', <#'/XJ',#> '/R:0', '/W:0'
             if ($Recurse) {$params += '/E'}
             if ($Include) {$params += $Include}
+            if ($ExcludeDirs) {$params += '/XD', ('"' + ($ExcludeDirs -join '" "') + '"')}
+            if ($ExcludeFiles) {$params += '/XF', ('"' + ($ExcludeFiles -join '" "') + '"')}
             foreach ($dir in $Path) {
                 # http://stackoverflow.com/questions/12027987/how-to-copy-directories-with-spaces-in-the-name
                 if ($dir.contains(' ')) {
                     $dir = '"' + $dir + ' "'
                 }
-                foreach ($line in $(robocopy $dir NULL $params)) {
+            #write-host "robocopy $dir 'c:\tmep' $params"
+            #write-host $(robocopy $dir 'c:\tmep' $params)
+                foreach ($line in $(robocopy $dir 'c:\tmep' $params)) {
                     # folder
                     if (!$File -and $line -match '\s+\d+\s+(?<FullName>.*\\)$') {
                         if ($Include) {
@@ -110,7 +141,7 @@ function Get-Files {
                         } else {
                             # [System.IO.FileInfo]$matches.fullname
                             $name = Split-Path $matches.FullName -Leaf
-                            Write-Output $([pscustomobject]@{
+                            Write-Output $(new-object psobject -prop @{
                                 FullName = $matches.FullName
                                 DirectoryName = Split-Path $matches.FullName
                                 Name = $name
@@ -121,7 +152,7 @@ function Get-Files {
                         }
                     } else {
                         # Uncomment to see all lines that were not matched in the regex above.
-                        #Write-host $line
+                        #Write-host "[NOTMATCHED] $line"
                     }
                 }
             }
