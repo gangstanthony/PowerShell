@@ -18,6 +18,9 @@
 #  636 - Lightweight Directory Access Protocol over TLS/SSL (LDAPS)
 # 1433 - SQL server
 
+# BETTER VERSION, but i couldn't get it to work properly
+# https://jonlabelle.com/snippets/view/powershell/powershell-script-to-scan-open-ports
+
 function Test-Port {
     param (
         $ip = '127.0.0.1',
