@@ -44,7 +44,8 @@ if (Test-Path -Path $FileName)
     Remove-Item $FileName  
     Write-Debug "$FileName removed"  
 }  
-  
+
+# recommend not using win32_product. check comments here: https://github.com/gangstanthony/PowerShell/blob/master/Get-InstalledApps.ps1
 # Run command   
 Get-WmiObject win32_Product -ComputerName $ComputerName |   
     Select Name,Version,PackageName,Installdate,Vendor |   
