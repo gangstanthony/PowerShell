@@ -1,3 +1,5 @@
+# https://serverfault.com/questions/429240/how-do-you-manage-network-locations-through-domain-group-policies
+
 function Remove-NetworkShortcut {
     param (
         [string]$Name,
