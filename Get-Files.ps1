@@ -109,7 +109,7 @@ function Get-Files {
             if ($ExcludeDirs) {$params += '/XD', ('"' + ($ExcludeDirs -join '" "') + '"')}
             if ($ExcludeFiles) {$params += '/XF', ('"' + ($ExcludeFiles -join '" "') + '"')}
             foreach ($dir in $Path) {
-                # http://stackoverflow.com/questions/12027987/how-to-copy-directories-with-spaces-in-the-name
+                # https://stackoverflow.com/a/30244061/4589490
                 if ($dir.contains(' ')) {
                     $dir = '"' + $dir + ' "'
                 }
