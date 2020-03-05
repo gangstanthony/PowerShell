@@ -3,7 +3,7 @@
 # https://github.com/gangstanthony/PowerShell/blob/master/Get-Files.ps1
 
 # a note about: $dir = '"' + $dir + ' "'
-# http://stackoverflow.com/questions/12027987/how-to-copy-directories-with-spaces-in-the-name
+# https://stackoverflow.com/a/30244061/4589490
 
 function Get-Files
 {
