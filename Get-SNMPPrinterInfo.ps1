@@ -99,6 +99,7 @@ function Get-SNMPPrinterInfo {
                         Addresses = $addr
                     }
                 }
+                $snmp.Close()
             } else {
                 Write-Warning "Machine '$printer' may be offline."
             }
