@@ -25,7 +25,7 @@ function Create-ThisPcPin {
         } else {
             if (!$force) {
                 $createdby = (Get-ItemProperty $item.PSPath).CreatedBy
-                if ($createdby -ne 'Winaero Tweaker') {
+                if ($createdby -ne 'Create-ThisPcPin') {
                     $answer = Read-Host 'Looks like this Pin was not created by Create-ThisPcPin. Delete anyway? y/[N]'
                     if ($answer -ne 'y') {
                         return
@@ -50,10 +50,10 @@ function Create-ThisPcPin {
         [String] $GUID = [guid]::NewGuid().ToString()
     
         $null = reg add "HKU\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{$GUID}" /ve /t REG_SZ /d $name /f
-        $null = reg add "HKU\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Winaero Tweaker" /f
+        $null = reg add "HKU\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Create-ThisPcPin" /f
         $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /ve /t REG_SZ /d $name /f
         $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /v "{305ca226-d286-468e-b848-2b2e8e697b74} 2" /t REG_DWORD /d "4294967295" /f
-        $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Winaero Tweaker" /f
+        $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Create-ThisPcPin" /f
         $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /v "DescriptionID" /t REG_DWORD /d "3" /f
         $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /v "InfoTip" /t REG_SZ /d $path /f
         $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}" /v "System.IsPinnedtoNameSpaceTree" /t REG_DWORD /d "1" /f
@@ -72,7 +72,7 @@ function Create-ThisPcPin {
         $null = reg add "HKU\$sid\Software\Classes\CLSID\{$GUID}\ShellFolder" /v "WantsFORPARSING" /t REG_SZ /f
         $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /ve /t REG_SZ /d $name /f
         $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /v "{305ca226-d286-468e-b848-2b2e8e697b74} 2" /t REG_DWORD /d "4294967295" /f
-        $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Winaero Tweaker" /f
+        $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Create-ThisPcPin" /f
         $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /v "DescriptionID" /t REG_DWORD /d "3" /f
         $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /v "InfoTip" /t REG_SZ /d $path /f
         $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}" /v "System.IsPinnedtoNameSpaceTree" /t REG_DWORD /d "1" /f
@@ -91,7 +91,7 @@ function Create-ThisPcPin {
         $null = reg add "HKU\$sid\Software\Classes\WOW6432Node\CLSID\{$GUID}\ShellFolder" /v "WantsFORPARSING" /t REG_SZ /f
         $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /ve /t REG_SZ /d $name /f
         $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /v "{305ca226-d286-468e-b848-2b2e8e697b74} 2" /t REG_DWORD /d "4294967295" /f
-        $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Winaero Tweaker" /f
+        $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Create-ThisPcPin" /f
         $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /v "DescriptionID" /t REG_DWORD /d "3" /f
         $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /v "InfoTip" /t REG_SZ /d $path /f
         $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}" /v "System.IsPinnedtoNameSpaceTree" /t REG_DWORD /d "1" /f
@@ -110,7 +110,7 @@ function Create-ThisPcPin {
         $null = reg add "HKU\$sid`_Classes\CLSID\{$GUID}\ShellFolder" /v "WantsFORPARSING" /t REG_SZ /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /ve /t REG_SZ /d $name /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /v "{305ca226-d286-468e-b848-2b2e8e697b74} 2" /t REG_DWORD /d "4294967295" /f
-        $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Winaero Tweaker" /f
+        $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Create-ThisPcPin" /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /v "DescriptionID" /t REG_DWORD /d "3" /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /v "InfoTip" /t REG_SZ /d $path /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}" /v "System.IsPinnedtoNameSpaceTree" /t REG_DWORD /d "1" /f
