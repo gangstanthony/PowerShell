@@ -16,6 +16,8 @@ function Create-ThisPcPin {
         [switch]$force
     )
 
+    $sid = ([System.Security.Principal.WindowsIdentity]::GetCurrent()).User.Value
+
     if ($delete) {
         New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS
         $item = dir "hku:\$sid\Software\Classes\CLSID\" | ? {(Get-ItemProperty $_.pspath).'(default)' -ceq $name}
@@ -44,8 +46,6 @@ function Create-ThisPcPin {
         if (!(New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
             throw 'you are not admin'
         }
-
-        $sid = ([System.Security.Principal.WindowsIdentity]::GetCurrent()).User.Value
 
         [String] $GUID = [guid]::NewGuid().ToString()
     
