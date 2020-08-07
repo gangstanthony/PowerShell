@@ -48,6 +48,7 @@ function Create-ThisPcPin {
         }
 
         [String] $GUID = [guid]::NewGuid().ToString()
+        $guid
     
         $null = reg add "HKU\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{$GUID}" /ve /t REG_SZ /d $name /f
         $null = reg add "HKU\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{$GUID}" /v "CreatedBy" /t REG_SZ /d "Create-ThisPcPin" /f
@@ -127,7 +128,5 @@ function Create-ThisPcPin {
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}\ShellFolder" /v "Attributes" /t REG_DWORD /d "4034920525" /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}\ShellFolder" /v "HideAsDeletePerUser" /t REG_SZ /f
         $null = reg add "HKU\$sid`_Classes\WOW6432Node\CLSID\{$GUID}\ShellFolder" /v "WantsFORPARSING" /t REG_SZ /f
-
-        $guid
     }
 }
