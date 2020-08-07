@@ -41,6 +41,7 @@ function Create-DesktopPin {
         }
 
         [String] $GUID = [guid]::NewGuid().ToString()
+        $guid
 
         $null = reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{$guid}" /t REG_DWORD /d "1" /f
         $null = reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{$guid}" /ve /t REG_SZ /d $name /f
@@ -69,7 +70,5 @@ function Create-DesktopPin {
         $null = reg add "HKCU\Software\Classes\Wow6432Node\CLSID\{$guid}\Instance" /v "CLSID" /t REG_SZ /d "{0E5AAE11-A475-4c5b-AB00-C66DE400274E}" /f
         $null = reg add "HKCU\Software\Classes\Wow6432Node\CLSID\{$guid}\Instance\InitPropertyBag" /v "Attributes" /t REG_DWORD /d "17" /f
         $null = reg add "HKCU\Software\Classes\Wow6432Node\CLSID\{$guid}\Instance\InitPropertyBag" /v "TargetFolderPath" /t REG_SZ /d $path /f
-
-        $guid
     }
 }
