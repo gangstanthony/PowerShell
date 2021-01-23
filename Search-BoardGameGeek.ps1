@@ -41,7 +41,7 @@ function Search-BoardGameGeek {
         $selection = ($guess + $all) | Out-GridView -PassThru
         #$selection = ($guess + $all) | Out-Menu
         #$selection = Get-Choice -Choices ($guess + $all)
-        #$selection = read-Choice -Choices ($guess + $all)
+        #$selection = Read-Choice -Choices ($guess + $all)
         #$selection = Show-ConsoleMenu -Choices ($guess + $all)
     }
 
