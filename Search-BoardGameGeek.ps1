@@ -39,7 +39,7 @@ function search-bgg {
 
     for ($i = 0; $i -lt $objs.count; $i++) {
         try {
-            $hash.Add($objs[$i].name.'#text', $objs[$i])
+            $hash.Add($all[$i], $objs[$i])
         } catch {}
     }
 
