@@ -12,8 +12,6 @@ function search-bgg {
     $objs = ([xml]$search.content).boardgames.boardgame
 
     $all = $objs | % {$_.name} | % {if ($_.'#text') {$_.'#text'} else {$_}}
-    
-    $selection = $null
 
     if ($all.count -eq 0) {
         [pscustomobject]@{
@@ -25,14 +23,26 @@ function search-bgg {
         return
     } elseif ($all.count -eq 1) {
         $selection = $all
-    }
-    
-    if (!$selection) {
-        $selection = $all | Out-GridView -PassThru
-        #$selection = $all | Out-Menu
-        #$selection = Get-Choice -Choices $all
-        #$selection = read-Choice -Choices $all
-        #$selection = Show-ConsoleMenu -Choices $all
+    } else {
+        $msd = try{
+            Get-Command Measure-StringDistance -ea Stop
+        } catch {
+            # uncomment to load function from github
+            # iex (iwr https://raw.githubusercontent.com/michaellwest/PowerShell-Modules/master/CorpApps/Measure-StringDistance.ps1).content
+            $?
+        }
+
+        if ($msd) {
+            $guess = @($all | select @{n='result';e={$_}}, @{n='diff';e={ 1- (Measure-StringDistance $name $_) / $name.length }} | sort diff | select -l 1 | % result)
+        } else {
+            $guess = $null
+        }
+        
+        $selection = ($guess + $all) | Out-GridView -PassThru
+        #$selection = ($guess + $all) | Out-Menu
+        #$selection = Get-Choice -Choices ($guess + $all)
+        #$selection = read-Choice -Choices ($guess + $all)
+        #$selection = Show-ConsoleMenu -Choices ($guess + $all)
     }
 
     $hash = @{}
