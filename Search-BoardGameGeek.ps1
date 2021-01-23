@@ -55,10 +55,10 @@ function search-bgg {
 
     $obj = $hash[$selection]
 
-    $n = $obj.InnerText
+    #$n = $obj.InnerText
     $id = $obj.objectid
 
-    #$game = ([xml](iwr https://boardgamegeek.com//xmlapi/boardgame/$id).content).boardgames.boardgame
+    #$game = ([xml](iwr https://boardgamegeek.com/xmlapi/boardgame/$id).content).boardgames.boardgame
     $average = ([xml](iwr https://www.boardgamegeek.com/xmlapi2/thing?id=$id`&stats=1).content).items.item.statistics.ratings.average.value
     $bayesaverage = ([xml](iwr https://www.boardgamegeek.com/xmlapi2/thing?id=$id`&stats=1).content).items.item.statistics.ratings.bayesaverage.value
 
