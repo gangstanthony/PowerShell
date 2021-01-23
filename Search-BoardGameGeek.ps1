@@ -2,7 +2,7 @@
 # https://www.boardgamegeek.com/xmlapi2/thing?id=13&stats=1
 # https://boardgamegeek.com/xmlapi/search?search=catan
 
-function search-bgg {
+function Search-BoardGameGeek {
     param (
         $name
     )
@@ -28,7 +28,7 @@ function search-bgg {
             Get-Command Measure-StringDistance -ea Stop
         } catch {
             # uncomment to load function from github
-            # iex (iwr https://raw.githubusercontent.com/michaellwest/PowerShell-Modules/master/CorpApps/Measure-StringDistance.ps1).content
+            iex (iwr https://raw.githubusercontent.com/michaellwest/PowerShell-Modules/master/CorpApps/Measure-StringDistance.ps1).content
             $?
         }
 
@@ -69,4 +69,6 @@ function search-bgg {
         BayesAverage = $bayesaverage
     }
 }
+
+Set-Alias search-bgg Search-BoardGameGeek
 
