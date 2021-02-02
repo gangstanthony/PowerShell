@@ -9,7 +9,7 @@ function git-createfile {
         $content,
         $owner,
         $repo,
-        $path
+        $path = '.\'
     )
 
     $base64token = [System.Convert]::ToBase64String([char[]]$token)
@@ -123,7 +123,7 @@ function git-uploadfile {
         $file,
         $owner,
         $repo,
-        $path,
+        $path = '.\',
         $sha,
         [switch]$force
     )
