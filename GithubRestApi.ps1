@@ -1,5 +1,6 @@
 # https://docs.github.com/en/rest/reference/repos#get-repository-content
 # https://channel9.msdn.com/Blogs/trevor-powershell/Automating-the-GitHub-REST-API-Using-PowerShell
+# https://www.reddit.com/r/PowerShell/comments/lb2j6j/managing_github_files_via_rest_api/
 
 function git-createfile {
     param (
