@@ -74,6 +74,10 @@ function Get-Files {
     )
     
     begin {
+        Write-Warning 'robocopy does not use same encoding as powershell for special characters. use alphafs'
+        Write-Warning 'enumeratefiles will download everything from OneDrive'
+        Write-Warning 'none of these show "size on disk." use get-filesizeondisk for OneDrive'
+        
         if ($Directory -and $File) {
             throw 'Cannot use both -Directory and -File at the same time.'
         }
