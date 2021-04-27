@@ -15,6 +15,7 @@
 # make all methods output similar results
 # add write-verbose
 # redo using [fileinfo] (look to "c# get files" or google ".net enumeratefiles skip on error access denied" for details)
+# add option to download alphafs.dll for you from here: https://github.com/alphaleonis/AlphaFS/releases
 
 ### !*!*!* W-A-R-N-I-N-G *!*!*! ###
 ##
