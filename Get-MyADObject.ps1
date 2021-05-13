@@ -60,7 +60,7 @@ function Get-MADObject {
         $newsearchroot = -join $newsearchroot
         $searcher.SearchRoot = [adsi]$newsearchroot
     }
-    $searcher.PropertiesToLoad.AddRange(('name', 'displayname', 'sn', 'givenname', 'objectcategory', 'whencreated', 'whenchanged', 'pwdlastset', 'lastlogon', 'distinguishedname', 'samaccountname', 'userprincipalname', 'mail', 'proxyaddresses', 'msexchhomeservername', 'homemdb', 'operatingsystem', 'description', 'title', 'department', 'manager', 'telephonenumber', 'mobile', 'scriptpath', 'homedirectory', 'homedrive', 'c', 'co', 'st', 'l', 'streetaddress', 'postalcode', 'company', 'useraccountcontrol', 'member', 'memberof'))
+    $searcher.PropertiesToLoad.AddRange(('name', 'displayname', 'sn', 'givenname', 'objectcategory', 'grouptype', 'whencreated', 'whenchanged', 'pwdlastset', 'lastlogon', 'distinguishedname', 'samaccountname', 'userprincipalname', 'mail', 'proxyaddresses', 'msexchhomeservername', 'homemdb', 'operatingsystem', 'description', 'title', 'department', 'manager', 'telephonenumber', 'mobile', 'scriptpath', 'homedirectory', 'homedrive', 'c', 'co', 'st', 'l', 'streetaddress', 'postalcode', 'company', 'useraccountcontrol', 'member', 'memberof'))
     
     $maxpwdage = ([adsi]"WinNT://$env:userdomain").maxpasswordage.value / 86400
     $(foreach ($object in $searcher.FindAll()) {
@@ -70,6 +70,7 @@ function Get-MADObject {
             LastName          = [string]$object.properties.sn
             FirstName         = [string]$object.properties.givenname
             ObjectCategory    = [string]$object.properties.objectcategory -replace '^cn=|,.*'
+            GroupType         = $(switch ([string]$object.properties.grouptype) {2 {'Global distribution group'};4 {'Domain local distribution group'};8 {'Universal distribution group'};'-2147483646' {'Global security group'};'-2147483644' {'Domain local security group'};'-2147483640' {'Universal security group'}})
             WhenCreated       = $(try{ Get-Date ([string]$object.Properties.whencreated) -f 'yyyy/MM/dd HH:mm:ss' } catch {''})
             WhenChanged       = $(try{ Get-Date ([string]$object.Properties.whenchanged) -f 'yyyy/MM/dd HH:mm:ss' } catch {''})
             PwdLastSet        = $(try{ Get-Date ([datetime]::fromfiletime($object.properties.pwdlastset[0])) -f 'yyyy/MM/dd HH:mm:ss' } catch {''})
@@ -105,7 +106,7 @@ function Get-MADObject {
             member            = $object.properties.member | sort
             memberof          = $object.properties.memberof | sort
         }
-    }) | select name, displayname, lastname, firstname, objectcategory, whencreated, whenchanged, pwdlastset, PwdIsExpired, PwdDoesNotExpire, lastlogon, distinguishedname, samaccountname, userprincipalname, mail, proxyaddresses, emailserver, emaildb, operatingsystem, description, title, department, manager, telephonenumber, mobile, scriptpath, homedirectory, homedrive, country1, country2, state, city, streetaddress, postalcode, company, accountislocked, accountisdisabled, member, memberof
+    }) | select name, displayname, lastname, firstname, objectcategory, grouptype, whencreated, whenchanged, pwdlastset, PwdIsExpired, PwdDoesNotExpire, lastlogon, distinguishedname, samaccountname, userprincipalname, mail, proxyaddresses, emailserver, emaildb, operatingsystem, description, title, department, manager, telephonenumber, mobile, scriptpath, homedirectory, homedrive, country1, country2, state, city, streetaddress, postalcode, company, accountislocked, accountisdisabled, member, memberof
 }
 
 <#
