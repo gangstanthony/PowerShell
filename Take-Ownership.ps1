@@ -34,6 +34,7 @@ function Take-Ownership {
     param (
         [String]$Folder,
         [switch]$Everyone,
+        [switch]$me,
         [switch]$ThisItemOnly,
         [switch]$File,
         [switch]$Revoke
@@ -57,6 +58,18 @@ function Take-Ownership {
             SubInACL.exe /FILE $Folder /GRANT=Everyone=F
             if (!$ThisItemOnly) {
                 SubInACL.exe /SUBDIRECTORIES $Folder /GRANT=Everyone=F
+            }
+        }
+    } elseif ($me) {
+        if ($Revoke) {
+            if (!$ThisItemOnly) {
+                SubInACL.exe /SUBDIRECTORIES $Folder /REVOKE=$(whoami)
+            }
+            SubInACL.exe /FILE $Folder /REVOKE=$(whoami)
+        } else {
+            SubInACL.exe /FILE $Folder /GRANT=$(whoami)=F
+            if (!$ThisItemOnly) {
+                SubInACL.exe /SUBDIRECTORIES $Folder /GRANT=$(whoami)=F
             }
         }
     } else {
