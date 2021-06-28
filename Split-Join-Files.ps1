@@ -31,6 +31,7 @@ function Split-File ([string]$inFile, [int]$bufSize = 5mb) {
         Write-Host "Wrote $outFile"
         $chunkNum += 1
     }
+    $stream.Close()
 }
 
 # all split files must be in same directory
