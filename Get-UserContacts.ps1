@@ -17,6 +17,7 @@ function Get-UserContacts {
             try {
                 Write-Host 'Attempting to download EWSManagedAPI2.2.msi to C:\temp...'
                 #iwr https://download.microsoft.com/download/8/9/9/899EEF2C-55ED-4C66-9613-EE808FCF861C/EwsManagedApi.msi -OutFile 'c:\temp\EWSManagedAPI2.2.msi'
+                # https://web.archive.org/web/20200812034329/https://download.microsoft.com/download/8/9/9/899EEF2C-55ED-4C66-9613-EE808FCF861C/EwsManagedApi.msi
                 iwr https://github.com/gangstanthony/PowerShell/blob/master/EWSManagedAPI2.2.msi?raw=true -OutFile 'c:\temp\EWSManagedAPI2.2.msi'
 
                 Write-Host 'Attempting to install C:\temp\EWSManagedAPI2.2.msi...'
