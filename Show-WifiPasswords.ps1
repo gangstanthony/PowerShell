@@ -11,11 +11,9 @@ function Show-WifiPasswords {
     netsh.exe wlan show profiles | Select-String -Pattern "(?<=^.+: ).+$" | ForEach-Object -Process {
         $NetworkName = $_.Matches[0].Value
         $KeyMatches = netsh.exe wlan show profile name="$NetworkName" key=clear | Select-String -Pattern "(?<=^\s+Key Content\s+: ).+$"
-        if ($KeyMatches) {
-            [pscustomobject]@{
-                NetworkName = $NetworkName
-                SecurityKey = $KeyMatches.Matches[0].Value
-            }
+        [pscustomobject]@{
+            NetworkName = $NetworkName
+            SecurityKey = $( if ($KeyMatches) {$KeyMatches.Matches[0].Value} )
         }
     }
 }
