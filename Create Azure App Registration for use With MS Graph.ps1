@@ -46,7 +46,7 @@ $PasswordCredential.Value = ([System.Convert]::ToBase64String([System.Text.Encod
 $ApplicationPermission1 = New-Object -TypeName "Microsoft.Open.AzureAD.Model.ResourceAccess" -ArgumentList "df021288-bdef-4463-88db-98f22de89214","Role" # User.Read.All
 $Graph = New-Object -TypeName "Microsoft.Open.AzureAD.Model.RequiredResourceAccess"
 #$Graph.ResourceAppId = $myapp.AppId
-$Graph.ResourceAppId = '00000003-0000-0000-c000-000000000000' # app id should be that of "Microsoft Graph"
+$Graph.ResourceAppId = '00000003-0000-0000-c000-000000000000' # app id should be that of "Microsoft Graph" for when we "grant consent" later
 $Graph.ResourceAccess = $ApplicationPermission1 #, $DelegatedPermission1
 
 # for app roles if you need em
