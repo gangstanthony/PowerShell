@@ -6,6 +6,7 @@
 # takeown /f '\\computername\c$\Users\sam' /r /d y
 # cacls '\\computername\c$\Users\sam' /e /c /t /g domain\sam:f system:f everyone:f
 
+# https://github.com/gangstanthony/PowerShell/blob/master/subinacl.exe?raw=true
 <# download and copy subinacl.exe
     $msiurls = @(
         'https://download.microsoft.com/download/1/7/d/17d82b72-bc6a-4dc8-bfaa-98b37b22b367/subinacl.msi'
