@@ -1,5 +1,7 @@
 # http://www.stevieg.org/2010/07/using-powershell-to-import-contacts-into-exchange-and-outlook-live/
 
+# Import-MailboxContacts -CSVFileName C:\temp\contacts.csv -EmailAddress user@domain.com -Impersonate $true -Username admin@domain.com -Password <pass>
+
 function Import-MailboxContacts {
     param (
         [string]$CSVFileName,
