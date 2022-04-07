@@ -1,5 +1,7 @@
 # https://social.technet.microsoft.com/wiki/contents/articles/21573.exchange-access-mailbox-contacts-using-powershell-and-ews.aspx
 
+# note: maybe hangs on account if no longer active user? shared mailbox? no license?
+
 function Get-UserContacts {
     param (
         $EmailAddress, # account to check contacts of (user@domain.com)
