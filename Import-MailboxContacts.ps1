@@ -1,3 +1,5 @@
+# http://www.stevieg.org/2010/07/using-powershell-to-import-contacts-into-exchange-and-outlook-live/
+
 function Import-MailboxContacts {
     param (
         [string]$CSVFileName,
