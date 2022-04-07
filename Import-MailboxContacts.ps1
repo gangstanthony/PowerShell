@@ -1,5 +1,5 @@
 # http://www.stevieg.org/2010/07/using-powershell-to-import-contacts-into-exchange-and-outlook-live/
-# https://www.reddit.com/r/learnpython/comments/tyfg7n/getmailboxcontacts_and_importmailboxcontacts/
+# https://www.reddit.com/r/PowerShell/comments/tyfmuf/getmailboxcontacts_and_importmailboxcontacts
 
 # Import-MailboxContacts -CSVFileName C:\temp\contacts.csv -EmailAddress user@domain.com -Impersonate $true -Username admin@domain.com -Password <pass>
 
