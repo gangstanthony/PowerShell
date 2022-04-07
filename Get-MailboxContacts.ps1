@@ -2,7 +2,7 @@
 
 # note: maybe hangs on account if no longer active user? shared mailbox? no license?
 
-function Get-UserContacts {
+function Get-MailboxContacts {
     param (
         $EmailAddress, # account to check contacts of (user@domain.com)
         $Username, # admin account with impersonation access (user@domain.com)
