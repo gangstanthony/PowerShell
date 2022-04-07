@@ -4,7 +4,7 @@
 # NOTE: have not tested with admin account that requires MFA
 # NOTE: maybe hangs on account if no longer active user? shared mailbox? no license?
 
-# Get-UserContacts -EmailAddress user@domain.com -Username admin@domain.com -Password mypasswd
+# Get-MailboxContacts -EmailAddress user@domain.com -Username admin@domain.com -Password mypasswd
 
 function Get-MailboxContacts {
     param (
