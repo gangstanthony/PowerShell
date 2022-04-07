@@ -2,6 +2,8 @@
 
 # Import-MailboxContacts -CSVFileName C:\temp\contacts.csv -EmailAddress user@domain.com -Impersonate $true -Username admin@domain.com -Password <pass>
 
+# NOTE: not tested with admin account that requires MFA
+
 function Import-MailboxContacts {
     param (
         [string]$CSVFileName,
