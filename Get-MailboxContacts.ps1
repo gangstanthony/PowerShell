@@ -1,5 +1,5 @@
 # https://social.technet.microsoft.com/wiki/contents/articles/21573.exchange-access-mailbox-contacts-using-powershell-and-ews.aspx
-# https://www.reddit.com/r/learnpython/comments/tyfg7n/getmailboxcontacts_and_importmailboxcontacts/
+# https://www.reddit.com/r/PowerShell/comments/tyfmuf/getmailboxcontacts_and_importmailboxcontacts
 
 # NOTE: have not tested with admin account that requires MFA
 # NOTE: maybe hangs on account if no longer active user? shared mailbox? no license?
