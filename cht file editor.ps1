@@ -97,7 +97,7 @@ $btnsave.add_click({
         $props = $cheat | gm -MemberType NoteProperty | % name | ? {$_ -ne 'number'}
         $props | % {
             $prop = $_
-            $line = 'cheat' + $cheat.number + "_$prop =" + '"' + $cheat.$prop + '"'
+            $line = 'cheat' + $cheat.number + "_$prop = " + '"' + $cheat.$prop + '"'
             $output += $line
         }
     }
