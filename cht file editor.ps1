@@ -1,4 +1,4 @@
-﻿
+
 function Get-FileName($InitialDirectory) {
     Add-Type -AssemblyName System.Windows.Forms
     $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
@@ -104,7 +104,7 @@ $btnsave.add_click({
 
     $output += 'cheats = "' + $global:cheatsobj.count + '"'
 
-    $output | Set-Content $file
+    $output | Set-Content $global:file
 })
 
 $btnmoveup = New-Object system.Windows.Forms.Button
@@ -294,10 +294,10 @@ $btnload.add_click({
     clear-fields
     disable-buttons
     
-    $file = Get-FileName
-    $lblpath.Text = $file
+    $global:file = Get-FileName
+    $lblpath.Text = $global:file
 
-    if ($file) {
+    if ($global:file) {
         $btnsave.Enabled = $true
         $btnaddcheat.Enabled = $true
 
