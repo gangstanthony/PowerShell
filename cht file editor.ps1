@@ -304,7 +304,8 @@ $btnload.add_click({
         # only get lines that begin with "cheat..."
         $content = Get-Content $file | ? {$_ -match '^cheat'}
         write-host $($content -join "`r`n")
-        $cheats = $content | group {$_.split('_')[0]} | ? count -eq 20 | sort {'{0:d2}' -f [int]$_.name.replace('cheat','')}
+        #$cheats = $content | group {$_.split('_')[0]} | ? count -eq 20 | sort {'{0:d2}' -f [int]$_.name.replace('cheat','')}
+        $cheats = $content | group {$_.split('_')[0]} | ? count -gt 1 | sort {'{0:d2}' -f [int]$_.name.replace('cheat','')}
         
         $global:cheatsobj = $(
             foreach ($cheat in $cheats) {
