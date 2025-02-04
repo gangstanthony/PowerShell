@@ -142,8 +142,8 @@ $btnmoveup.add_click({
         rumble_value = $global:cheatsobj[$lblnumbervalue.Text].rumble_value
         value = $global:cheatsobj[$lblnumbervalue.Text].value
     }
-    
-    $global:cheatsobj[$lblnumbervalue.Text].number = [int]$lblnumbervalue.Text - 1
+
+    #$global:cheatsobj[$lblnumbervalue.Text].number = $lblnumbervalue.Text - 1
     $global:cheatsobj[$lblnumbervalue.Text].address = $global:cheatsobj[$lblnumbervalue.Text-1].address
     $global:cheatsobj[$lblnumbervalue.Text].address_bit_position = $global:cheatsobj[$lblnumbervalue.Text-1].address_bit_position
     $global:cheatsobj[$lblnumbervalue.Text].big_endian = $global:cheatsobj[$lblnumbervalue.Text-1].big_endian
@@ -165,7 +165,7 @@ $btnmoveup.add_click({
     $global:cheatsobj[$lblnumbervalue.Text].rumble_value = $global:cheatsobj[$lblnumbervalue.Text-1].rumble_value
     $global:cheatsobj[$lblnumbervalue.Text].value = $global:cheatsobj[$lblnumbervalue.Text-1].value
     
-    $global:cheatsobj[$lblnumbervalue.Text-1].number = [int]$lblnumbervalue.Text
+    #$global:cheatsobj[$lblnumbervalue.Text-1].number = [int]$lblnumbervalue.Text
     $global:cheatsobj[$lblnumbervalue.Text-1].address = $tempcheat.address
     $global:cheatsobj[$lblnumbervalue.Text-1].address_bit_position = $tempcheat.address_bit_position
     $global:cheatsobj[$lblnumbervalue.Text-1].big_endian = $tempcheat.big_endian
@@ -186,6 +186,8 @@ $btnmoveup.add_click({
     $global:cheatsobj[$lblnumbervalue.Text-1].rumble_type = $tempcheat.rumble_type
     $global:cheatsobj[$lblnumbervalue.Text-1].rumble_value = $tempcheat.rumble_value
     $global:cheatsobj[$lblnumbervalue.Text-1].value = $tempcheat.value
+    
+    #$global:cheatsobj = $global:cheatsobj | sort number
 
     update-listbox
 })
@@ -197,6 +199,82 @@ $btnmovedown.width = 80
 $btnmovedown.height = 30
 $btnmovedown.location = New-Object System.Drawing.Point(210,50)
 $btnmovedown.add_click({
+    
+    if ($lblnumbervalue.Text -eq $global:cheatsobj[-1].number) {
+        return
+    }
+
+    $tempcheat = [pscustomobject]@{
+        number = $global:cheatsobj[$lblnumbervalue.Text].number
+        address = $global:cheatsobj[$lblnumbervalue.Text].address
+        address_bit_position = $global:cheatsobj[$lblnumbervalue.Text].address_bit_position
+        big_endian = $global:cheatsobj[$lblnumbervalue.Text].big_endian
+        cheat_type = $global:cheatsobj[$lblnumbervalue.Text].cheat_type
+        code = $global:cheatsobj[$lblnumbervalue.Text].code
+        desc = $global:cheatsobj[$lblnumbervalue.Text].desc
+        enable = $global:cheatsobj[$lblnumbervalue.Text].enable
+        handler = $global:cheatsobj[$lblnumbervalue.Text].handler
+        memory_search_size = $global:cheatsobj[$lblnumbervalue.Text].memory_search_size
+        repeat_add_to_address = $global:cheatsobj[$lblnumbervalue.Text].repeat_add_to_address
+        repeat_add_to_value = $global:cheatsobj[$lblnumbervalue.Text].repeat_add_to_value
+        repeat_count = $global:cheatsobj[$lblnumbervalue.Text].repeat_count
+        rumble_port = $global:cheatsobj[$lblnumbervalue.Text].rumble_port
+        rumble_primary_duration = $global:cheatsobj[$lblnumbervalue.Text].rumble_primary_duration
+        rumble_primary_strength = $global:cheatsobj[$lblnumbervalue.Text].rumble_primary_strength
+        rumble_secondary_duration = $global:cheatsobj[$lblnumbervalue.Text].rumble_secondary_duration
+        rumble_secondary_strength = $global:cheatsobj[$lblnumbervalue.Text].rumble_secondary_strength
+        rumble_type = $global:cheatsobj[$lblnumbervalue.Text].rumble_type
+        rumble_value = $global:cheatsobj[$lblnumbervalue.Text].rumble_value
+        value = $global:cheatsobj[$lblnumbervalue.Text].value
+    }
+
+    #$global:cheatsobj[$lblnumbervalue.Text].number = $lblnumbervalue.Text - 1
+    $global:cheatsobj[$lblnumbervalue.Text].address = $global:cheatsobj[$lblnumbervalue.Text+1].address
+    $global:cheatsobj[$lblnumbervalue.Text].address_bit_position = $global:cheatsobj[$lblnumbervalue.Text+1].address_bit_position
+    $global:cheatsobj[$lblnumbervalue.Text].big_endian = $global:cheatsobj[$lblnumbervalue.Text+1].big_endian
+    $global:cheatsobj[$lblnumbervalue.Text].cheat_type = $global:cheatsobj[$lblnumbervalue.Text+1].cheat_type
+    $global:cheatsobj[$lblnumbervalue.Text].code = $global:cheatsobj[$lblnumbervalue.Text+1].code
+    $global:cheatsobj[$lblnumbervalue.Text].desc = $global:cheatsobj[$lblnumbervalue.Text+1].desc
+    $global:cheatsobj[$lblnumbervalue.Text].enable = $global:cheatsobj[$lblnumbervalue.Text+1].enable
+    $global:cheatsobj[$lblnumbervalue.Text].handler = $global:cheatsobj[$lblnumbervalue.Text+1].handler
+    $global:cheatsobj[$lblnumbervalue.Text].memory_search_size = $global:cheatsobj[$lblnumbervalue.Text+1].memory_search_size
+    $global:cheatsobj[$lblnumbervalue.Text].repeat_add_to_address = $global:cheatsobj[$lblnumbervalue.Text+1].repeat_add_to_address
+    $global:cheatsobj[$lblnumbervalue.Text].repeat_add_to_value = $global:cheatsobj[$lblnumbervalue.Text+1].repeat_add_to_value
+    $global:cheatsobj[$lblnumbervalue.Text].repeat_count = $global:cheatsobj[$lblnumbervalue.Text+1].repeat_count
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_port = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_port
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_primary_duration = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_primary_duration
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_primary_strength = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_primary_strength
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_secondary_duration = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_secondary_duration
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_secondary_strength = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_secondary_strength
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_type = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_type
+    $global:cheatsobj[$lblnumbervalue.Text].rumble_value = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_value
+    $global:cheatsobj[$lblnumbervalue.Text].value = $global:cheatsobj[$lblnumbervalue.Text+1].value
+    
+    #$global:cheatsobj[$lblnumbervalue.Text-1].number = [int]$lblnumbervalue.Text
+    $global:cheatsobj[$lblnumbervalue.Text+1].address = $tempcheat.address
+    $global:cheatsobj[$lblnumbervalue.Text+1].address_bit_position = $tempcheat.address_bit_position
+    $global:cheatsobj[$lblnumbervalue.Text+1].big_endian = $tempcheat.big_endian
+    $global:cheatsobj[$lblnumbervalue.Text+1].cheat_type = $tempcheat.cheat_type
+    $global:cheatsobj[$lblnumbervalue.Text+1].code = $tempcheat.code
+    $global:cheatsobj[$lblnumbervalue.Text+1].desc = $tempcheat.desc
+    $global:cheatsobj[$lblnumbervalue.Text+1].enable = $tempcheat.enable
+    $global:cheatsobj[$lblnumbervalue.Text+1].handler = $tempcheat.handler
+    $global:cheatsobj[$lblnumbervalue.Text+1].memory_search_size = $tempcheat.memory_search_size
+    $global:cheatsobj[$lblnumbervalue.Text+1].repeat_add_to_address = $tempcheat.repeat_add_to_address
+    $global:cheatsobj[$lblnumbervalue.Text+1].repeat_add_to_value = $tempcheat.repeat_add_to_value
+    $global:cheatsobj[$lblnumbervalue.Text+1].repeat_count = $tempcheat.repeat_count
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_port = $tempcheat.rumble_port
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_primary_duration = $tempcheat.rumble_primary_duration
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_primary_strength = $tempcheat.rumble_primary_strength
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_secondary_duration = $tempcheat.rumble_secondary_duration
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_secondary_strength = $tempcheat.rumble_secondary_strength
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_type = $tempcheat.rumble_type
+    $global:cheatsobj[$lblnumbervalue.Text+1].rumble_value = $tempcheat.rumble_value
+    $global:cheatsobj[$lblnumbervalue.Text+1].value = $tempcheat.value
+    
+    #$global:cheatsobj = $global:cheatsobj | sort number
+
+    update-listbox
 })
 
 $btnaddcheat = New-Object system.Windows.Forms.Button
@@ -335,8 +413,8 @@ $listbox.Font = 'consolas,10'
 
 $listbox.add_SelectedIndexChanged({
     $btnsavechanges.Enabled = $true
-    #$btnmoveup.Enabled = $true
-    #$btnmovedown.Enabled = $true
+    $btnmoveup.Enabled = $true
+    $btnmovedown.Enabled = $true
     $btnremovecheat.Enabled = $true
 
     $lblnumbervalue.Text = $global:cheatsobj[$listbox.SelectedIndex].number
@@ -639,4 +717,31 @@ $txtrumbleprimaryduration,$txtrumbleprimarystrength,$txtrumblesecondaryduration,
 #####
 
 $Form.ShowDialog()
+
+<# move up/down testing
+    $a = gc ".\Final Fantasy VI Advance (USA, Europe) (Code Breaker).cht" | ? {$_ -match '^cheat\d'}
+
+    $hash = @{}
+    $a | group {$_.split('_')[0]} | % {
+        $hash.Add($_.name -replace 'cheat', $_.group)
+    }
+
+    $selected = '16'
+    # move up
+    $selectedint = [int]$selected
+    $selectedstr = [string]$selected
+    $temphash = @{}
+    $temphash.Add([string]($selectedint-1), ($hash[$selectedstr] | % {$_ -replace '^.*_', "cheat$($selectedint-1)_"}))
+    $temphash.Add([string]$selectedint, ($hash[[string]($selectedint-1)] | % {$_ -replace '^.*_', "cheat$selectedint`_"}))
+    $temphash.Keys | % {$hash[$_] = $temphash[$_]}
+
+    $selected = 15
+    # move down
+    $selectedint = [int]$selected
+    $selectedstr = [string]$selected
+    $temphash = @{}
+    $temphash.Add([string]($selectedint+1), ($hash[$selectedstr] | % {$_ -replace '^.*_', "cheat$($selectedint+1)_"}))
+    $temphash.Add([string]$selectedint, ($hash[[string]($selectedint+1)] | % {$_ -replace '^.*_', "cheat$selectedint`_"}))
+    $temphash.Keys | % {$hash[$_] = $temphash[$_]}
+#>
 
