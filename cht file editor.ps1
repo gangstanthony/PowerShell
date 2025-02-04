@@ -228,7 +228,7 @@ $btnmovedown.add_click({
         value = $global:cheatsobj[$lblnumbervalue.Text].value
     }
 
-    #$global:cheatsobj[$lblnumbervalue.Text].number = $lblnumbervalue.Text - 1
+    #$global:cheatsobj[$lblnumbervalue.Text].number = $lblnumbervalue.Text + 1
     $global:cheatsobj[$lblnumbervalue.Text].address = $global:cheatsobj[$lblnumbervalue.Text+1].address
     $global:cheatsobj[$lblnumbervalue.Text].address_bit_position = $global:cheatsobj[$lblnumbervalue.Text+1].address_bit_position
     $global:cheatsobj[$lblnumbervalue.Text].big_endian = $global:cheatsobj[$lblnumbervalue.Text+1].big_endian
@@ -250,7 +250,7 @@ $btnmovedown.add_click({
     $global:cheatsobj[$lblnumbervalue.Text].rumble_value = $global:cheatsobj[$lblnumbervalue.Text+1].rumble_value
     $global:cheatsobj[$lblnumbervalue.Text].value = $global:cheatsobj[$lblnumbervalue.Text+1].value
     
-    #$global:cheatsobj[$lblnumbervalue.Text-1].number = [int]$lblnumbervalue.Text
+    #$global:cheatsobj[$lblnumbervalue.Text+1].number = [int]$lblnumbervalue.Text
     $global:cheatsobj[$lblnumbervalue.Text+1].address = $tempcheat.address
     $global:cheatsobj[$lblnumbervalue.Text+1].address_bit_position = $tempcheat.address_bit_position
     $global:cheatsobj[$lblnumbervalue.Text+1].big_endian = $tempcheat.big_endian
