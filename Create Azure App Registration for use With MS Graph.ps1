@@ -55,6 +55,7 @@ $Graph.ResourceAccess = $ApplicationPermission1 #, $DelegatedPermission1
 #$UserReadAll = (Get-AzureAdServicePrincipal -filter "DisplayName eq 'Microsoft Graph'").AppRoles | ? id -eq 'df021288-bdef-4463-88db-98f22de89214'
 
 # apply api permissions and app roles to our new app
+# (can add new perms without removing old ones) https://stackoverflow.com/questions/51651889/how-to-add-app-roles-under-manifest-in-azure-active-directory-using-powershell-s
 Set-AzureADApplication -ObjectId $myapp.ObjectId -RequiredResourceAccess $Graph # -AppRoles $UserReadAll
 
 <# i did not need to create service principal?
