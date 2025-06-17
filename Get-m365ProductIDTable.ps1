@@ -66,6 +66,7 @@ param (
     # Return only the matching SkuId
     [Parameter()]
     [ValidateNotNullOrEmpty()]
+    [guid]
     $SkuId,
 
     ## Force convert license names to title case.
