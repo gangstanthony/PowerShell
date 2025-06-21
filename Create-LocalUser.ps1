@@ -4,17 +4,13 @@
 function Create-LocalUser {
     param (
         [string]$computer = $env:computername,
-        [string]$fullname,
-        [string]$username,
-        [string]$password,
-        [switch]$passworddoesnotexpire,
-        [string]$addtogroup = 'Administrators',
+        [string]$fullName,
+        [Parameter(mandatory = $true)][string]$username,
+        [Parameter(mandatory = $true)][string]$password,
+        [switch]$passworDdoesNotExpire,
+        [string]$addToGroup = 'Administrators',
         [switch]$CheckFirst = $true
     )
-
-    if (!$username -or !$password) {
-        throw 'no username or password'
-    }
 
     if ($checkfirst -and ([ADSI]"WinNT://$computer/$username").Name) {
         Write-Warning "$username already exists on $computer"
@@ -27,8 +23,6 @@ function Create-LocalUser {
     $objUser.SetInfo()
     $objUser.FullName = $fullname
     $objUser.SetInfo()
-    #$objUser.Description = 'Test user'
-    #$objUser.SetInfo()
 
     if ($passworddoesnotexpire) {
         $objUser.UserFlags = 65536 # password does not expire
